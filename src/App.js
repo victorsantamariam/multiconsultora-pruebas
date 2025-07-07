@@ -9,21 +9,18 @@ import {
   Button,
   Grid,
   InputAdornment,
-  Chip,
-  Stack,
-  IconButton,
   Divider
 } from "@mui/material";
 import EmailIcon from "@mui/icons-material/Email";
 import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import CancelIcon from "@mui/icons-material/Cancel";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import SendIcon from "@mui/icons-material/Send";
 import { NumericFormat } from "react-number-format";
 import metlifeLogo from "./metlife-logo.png";
 import asesoraFoto from "./asesora.jpg";
+import CoberturasDinamicas from "./components/CoberturasDinamicas";
+import html2pdf from "html2pdf.js";
 
 const datosAsesora = {
   nombre: "Juliana Arango",
@@ -51,27 +48,14 @@ const opcionesPoliza = {
   ]
 };
 
-const coberturasDisponibles = [
-  "Muerte por cualquier causa",
-  "Desmembración por accidente",
-  "Exoneración de pago de primas",
-  "Fractura de huesos y quemaduras graves",
-  "Reembolso por gastos médicos",
-  "Enfermedades graves",
-  "ITP más protección",
-  "Rentas diarias por hospitalización por accidente o enfermedad",
-  "Rentas diarias por hospitalización en uci por accidente o enfermedad",
-  "Asistencia en Viaje internacional",
-  "Asistencia médica",
-  "Asistencia nutricional",
-  "Asistencia odontologica",
-  "Asistencia conductor elegido",
-  "Gastos funerarios"
-];
-
 function formatCurrency(value) {
   if (!value) return "$ 0";
-  return "$ " + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return (
+    "$ " +
+    value
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+  );
 }
 
 export default function App() {
@@ -104,22 +88,6 @@ export default function App() {
   const handleCotizacionChange = (e) => {
     setCotizacion({ ...cotizacion, [e.target.name]: e.target.value });
   };
-  // Selección de coberturas
-  const handleCoberturaToggle = (cobertura) => {
-    if (coberturasSeleccionadas.find(c => c.nombre === cobertura)) {
-      setCoberturasSeleccionadas(prev => prev.filter(c => c.nombre !== cobertura));
-    } else {
-      setCoberturasSeleccionadas(prev => [...prev, { nombre: cobertura, valor: "" }]);
-    }
-  };
-  const handleValorCobertura = (idx, valor) => {
-    setCoberturasSeleccionadas(prev => prev.map((c, i) =>
-      i === idx ? { ...c, valor } : c
-    ));
-  };
-  const handleRemoveCobertura = (idx) => {
-    setCoberturasSeleccionadas(prev => prev.filter((_, i) => i !== idx));
-  };
 
   // Acciones de resumen/generar cotización
   const handleGenerarResumen = () => {
@@ -128,12 +96,38 @@ export default function App() {
   };
 
   const handleDescargarPDF = () => {
-    window.print();
-    // Para una solución profesional, puedes usar html2pdf, jsPDF o similar.
+    const resumen = document.getElementById("resumen-cotizacion");
+    if (resumen) {
+      html2pdf()
+        .set({
+          margin: 0.5,
+          filename: `Cotizacion_${cliente.nombre || "cliente"}.pdf`,
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: "in", format: "letter", orientation: "portrait" }
+        })
+        .from(resumen)
+        .save();
+    }
+  };
+
+  // Correos y WhatsApp: Descargar PDF y luego abrir enlace
+  const handleDescargarYEnviarCorreo = () => {
+    handleDescargarPDF();
+    setTimeout(() => {
+      alert("Adjunta el PDF descargado al correo.");
+      handleEnviarCorreo();
+    }, 2000);
+  };
+
+  const handleDescargarYEnviarWhatsApp = () => {
+    handleDescargarPDF();
+    setTimeout(() => {
+      alert("Adjunta el PDF descargado al mensaje de WhatsApp.");
+      handleEnviarWhatsApp();
+    }, 2000);
   };
 
   const handleEnviarCorreo = () => {
-    // Puedes usar mailto o integrar un backend/email service
     const subject = encodeURIComponent("Cotización de seguro MetLife");
     const body = encodeURIComponent(
       `Hola ${cliente.nombre},\n\nAdjunto encontrarás tu cotización de seguro.\n\nSaludos,\n${datosAsesora.nombre}`
@@ -142,7 +136,6 @@ export default function App() {
   };
 
   const handleEnviarWhatsApp = () => {
-    // Solo funciona en móvil o si el usuario tiene WhatsApp desktop
     const mensaje = encodeURIComponent(
       `Hola ${cliente.nombre}, te comparto la cotización de seguro MetLife.`
     );
@@ -151,7 +144,11 @@ export default function App() {
   };
 
   // Validación básica para mostrar el botón de resumen
-  const datosCompletos = cliente.nombre && tipoPoliza && cotizacion.primaMensual && coberturasSeleccionadas.length > 0;
+  const datosCompletos =
+    cliente.nombre &&
+    tipoPoliza &&
+    cotizacion.primaMensual &&
+    coberturasSeleccionadas.length > 0;
 
   return (
     <Box
@@ -235,377 +232,360 @@ export default function App() {
 
       {!showResumen && (
         <>
-        {/* FORMULARIO DE DATOS DEL CLIENTE */}
-        <Box
-          sx={{
-            maxWidth: 750,
-            margin: "0 auto",
-            background: "#fff",
-            borderRadius: 3,
-            boxShadow: "0 2px 24px #b7e4fc33",
-            p: 4,
-            mt: 3
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{ color: "#1abc74", mb: 2, fontWeight: 700, letterSpacing: 1 }}
-          >
-            Datos del cliente
-          </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Nombre completo"
-                name="nombre"
-                fullWidth
-                value={cliente.nombre}
-                onChange={handleClienteChange}
-                variant="outlined"
-                required
-                autoComplete="off"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Cédula"
-                name="cedula"
-                fullWidth
-                value={cliente.cedula}
-                onChange={handleClienteChange}
-                variant="outlined"
-                required
-                autoComplete="off"
-                inputProps={{ maxLength: 15 }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Correo electrónico"
-                name="correo"
-                type="email"
-                fullWidth
-                value={cliente.correo}
-                onChange={handleClienteChange}
-                variant="outlined"
-                required
-                autoComplete="off"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <EmailIcon color="primary" />
-                    </InputAdornment>
-                  )
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Celular"
-                name="celular"
-                fullWidth
-                value={cliente.celular}
-                onChange={handleClienteChange}
-                variant="outlined"
-                required
-                autoComplete="off"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PhoneIphoneIcon color="primary" />
-                    </InputAdornment>
-                  )
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                label="Edad"
-                name="edad"
-                type="number"
-                fullWidth
-                value={cliente.edad}
-                onChange={handleClienteChange}
-                variant="outlined"
-                required
-                inputProps={{ min: 0, max: 100 }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                select
-                label="Género"
-                name="genero"
-                fullWidth
-                value={cliente.genero}
-                onChange={handleClienteChange}
-                variant="outlined"
-                required
-              >
-                <MenuItem value="">Seleccione</MenuItem>
-                <MenuItem value="Masculino">Masculino</MenuItem>
-                <MenuItem value="Femenino">Femenino</MenuItem>
-                <MenuItem value="Otro">Otro</MenuItem>
-              </TextField>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                label="Ciudad"
-                name="ciudad"
-                fullWidth
-                value={cliente.ciudad}
-                onChange={handleClienteChange}
-                variant="outlined"
-                required
-                autoComplete="off"
-              />
-            </Grid>
-          </Grid>
-        </Box>
-
-        {/* SELECCIÓN DE PÓLIZA */}
-        <Box
-          sx={{
-            maxWidth: 750,
-            margin: "32px auto 0 auto",
-            background: "#fff",
-            borderRadius: 3,
-            boxShadow: "0 2px 24px #b7e4fc33",
-            p: 4
-          }}
-        >
-          <Typography
-            variant="h6"
+          {/* FORMULARIO DE DATOS DEL CLIENTE */}
+          <Box
             sx={{
-              color: "#1abc74",
-              mb: 2,
-              fontWeight: 700,
-              letterSpacing: 1
+              maxWidth: 750,
+              margin: "0 auto",
+              background: "#fff",
+              borderRadius: 3,
+              boxShadow: "0 2px 24px #b7e4fc33",
+              p: 4,
+              mt: 3
             }}
           >
-            Selecciona el tipo de póliza
-          </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                select
-                label="Categoría"
-                value={categoriaPoliza}
-                onChange={e => {
-                  setCategoriaPoliza(e.target.value);
-                  setTipoPoliza(""); // Limpiar tipo al cambiar categoría
-                }}
-                fullWidth
-                variant="outlined"
-                required
-              >
-                <MenuItem value="">Selecciona una categoría</MenuItem>
-                <MenuItem value="VIDA">VIDA</MenuItem>
-                <MenuItem value="ECOSISTEMA">ECOSISTEMA</MenuItem>
-              </TextField>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                select
-                label="Tipo de póliza"
-                value={tipoPoliza}
-                onChange={e => setTipoPoliza(e.target.value)}
-                fullWidth
-                variant="outlined"
-                required
-                disabled={!categoriaPoliza}
-              >
-                <MenuItem value="">Selecciona un tipo</MenuItem>
-                {categoriaPoliza &&
-                  opcionesPoliza[categoriaPoliza].map(opcion => (
-                    <MenuItem key={opcion} value={opcion}>
-                      {opcion}
-                    </MenuItem>
-                  ))}
-              </TextField>
-            </Grid>
-          </Grid>
-        </Box>
-
-        {/* BLOQUE DE COTIZACIÓN */}
-        <Box
-          sx={{
-            maxWidth: 750,
-            margin: "32px auto 0 auto",
-            background: "#fff",
-            borderRadius: 3,
-            boxShadow: "0 2px 24px #b7e4fc33",
-            p: 4
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{
-              color: "#1abc74",
-              mb: 2,
-              fontWeight: 700,
-              letterSpacing: 1
-            }}
-          >
-            Datos de la cotización
-          </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <NumericFormat
-                customInput={TextField}
-                label="Suma asegurada"
-                name="sumaAsegurada"
-                fullWidth
-                value={cotizacion.sumaAsegurada}
-                onValueChange={(values) => setCotizacion(cot => ({ ...cot, sumaAsegurada: values.value }))}
-                variant="outlined"
-                required
-                thousandSeparator="."
-                decimalSeparator=","
-                prefix="$ "
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <NumericFormat
-                customInput={TextField}
-                label="Prima mensual"
-                name="primaMensual"
-                fullWidth
-                value={cotizacion.primaMensual}
-                onValueChange={(values) => setCotizacion(cot => ({ ...cot, primaMensual: values.value }))}
-                variant="outlined"
-                required
-                thousandSeparator="."
-                decimalSeparator=","
-                prefix="$ "
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Plazo de pagos (años)"
-                name="plazoPagos"
-                fullWidth
-                value={cotizacion.plazoPagos}
-                onChange={handleCotizacionChange}
-                variant="outlined"
-                required
-                type="number"
-                inputProps={{ min: 1, max: 99 }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <NumericFormat
-                customInput={TextField}
-                label="Retorno de capital (si aplica)"
-                name="retornoCapital"
-                fullWidth
-                value={cotizacion.retornoCapital}
-                onValueChange={(values) => setCotizacion(cot => ({ ...cot, retornoCapital: values.value }))}
-                variant="outlined"
-                thousandSeparator="."
-                decimalSeparator=","
-                prefix="$ "
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Notas adicionales / Observaciones"
-                name="notas"
-                fullWidth
-                multiline
-                minRows={2}
-                maxRows={4}
-                value={cotizacion.notas}
-                onChange={handleCotizacionChange}
-                variant="outlined"
-              />
-            </Grid>
-          </Grid>
-        </Box>
-
-        {/* BLOQUE DE COBERTURAS */}
-        <Box
-          sx={{
-            maxWidth: 750,
-            margin: "32px auto 0 auto",
-            background: "#fff",
-            borderRadius: 3,
-            boxShadow: "0 2px 24px #b7e4fc33",
-            p: 4
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{
-              color: "#1abc74",
-              mb: 2,
-              fontWeight: 700,
-              letterSpacing: 1
-            }}
-          >
-            Selecciona las coberturas incluidas
-          </Typography>
-          <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 2 }}>
-            {coberturasDisponibles.map((cobertura) => (
-              <Chip
-                key={cobertura}
-                label={cobertura}
-                color={
-                  coberturasSeleccionadas.find(c => c.nombre === cobertura)
-                    ? "success"
-                    : "default"
-                }
-                icon={
-                  coberturasSeleccionadas.find(c => c.nombre === cobertura) ? <CheckCircleIcon /> : null
-                }
-                onClick={() => handleCoberturaToggle(cobertura)}
-                sx={{ mb: 1 }}
-              />
-            ))}
-          </Stack>
-          <Grid container spacing={2}>
-            {coberturasSeleccionadas.map((cob, idx) => (
-              <Grid item xs={12} sm={6} key={cob.nombre}>
-                <Box display="flex" alignItems="center">
-                  <Typography sx={{ flex: 1 }}>{cob.nombre}</Typography>
-                  <NumericFormat
-                    value={cob.valor}
-                    thousandSeparator="."
-                    decimalSeparator=","
-                    prefix="$ "
-                    customInput={TextField}
-                    onValueChange={(values) => handleValorCobertura(idx, values.value)}
-                    placeholder="Valor"
-                    sx={{ width: 140, ml: 2 }}
-                    size="small"
-                  />
-                  <IconButton color="error" onClick={() => handleRemoveCobertura(idx)}>
-                    <CancelIcon />
-                  </IconButton>
-                </Box>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-
-        {/* BOTÓN FINAL */}
-        <Box sx={{ maxWidth: 750, margin: "32px auto 40px auto", textAlign: "center" }}>
-          <Button
-            variant="contained"
-            color="success"
-            size="large"
-            sx={{ px: 5, borderRadius: 2, fontWeight: 700, fontSize: 18 }}
-            disabled={!datosCompletos}
-            onClick={handleGenerarResumen}
-          >
-            Generar cotización y compartir
-          </Button>
-          {!datosCompletos && (
-            <Typography sx={{ color: "#aaa", mt: 2, fontSize: 15 }}>
-              Completa todos los datos y selecciona al menos una cobertura para continuar
+            <Typography
+              variant="h6"
+              sx={{
+                color: "#1abc74",
+                mb: 2,
+                fontWeight: 700,
+                letterSpacing: 1
+              }}
+            >
+              Datos del cliente
             </Typography>
-          )}
-        </Box>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Nombre completo"
+                  name="nombre"
+                  fullWidth
+                  value={cliente.nombre}
+                  onChange={handleClienteChange}
+                  variant="outlined"
+                  required
+                  autoComplete="off"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Cédula"
+                  name="cedula"
+                  fullWidth
+                  value={cliente.cedula}
+                  onChange={handleClienteChange}
+                  variant="outlined"
+                  required
+                  autoComplete="off"
+                  inputProps={{ maxLength: 15 }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Correo electrónico"
+                  name="correo"
+                  type="email"
+                  fullWidth
+                  value={cliente.correo}
+                  onChange={handleClienteChange}
+                  variant="outlined"
+                  required
+                  autoComplete="off"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <EmailIcon color="primary" />
+                      </InputAdornment>
+                    )
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Celular"
+                  name="celular"
+                  fullWidth
+                  value={cliente.celular}
+                  onChange={handleClienteChange}
+                  variant="outlined"
+                  required
+                  autoComplete="off"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PhoneIphoneIcon color="primary" />
+                      </InputAdornment>
+                    )
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  label="Edad"
+                  name="edad"
+                  type="number"
+                  fullWidth
+                  value={cliente.edad}
+                  onChange={handleClienteChange}
+                  variant="outlined"
+                  required
+                  inputProps={{ min: 0, max: 100 }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  select
+                  label="Género"
+                  name="genero"
+                  fullWidth
+                  value={cliente.genero}
+                  onChange={handleClienteChange}
+                  variant="outlined"
+                  required
+                >
+                  <MenuItem value="">Seleccione</MenuItem>
+                  <MenuItem value="Masculino">Masculino</MenuItem>
+                  <MenuItem value="Femenino">Femenino</MenuItem>
+                  <MenuItem value="Otro">Otro</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  label="Ciudad"
+                  name="ciudad"
+                  fullWidth
+                  value={cliente.ciudad}
+                  onChange={handleClienteChange}
+                  variant="outlined"
+                  required
+                  autoComplete="off"
+                />
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* SELECCIÓN DE PÓLIZA */}
+          <Box
+            sx={{
+              maxWidth: 750,
+              margin: "32px auto 0 auto",
+              background: "#fff",
+              borderRadius: 3,
+              boxShadow: "0 2px 24px #b7e4fc33",
+              p: 4
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                color: "#1abc74",
+                mb: 2,
+                fontWeight: 700,
+                letterSpacing: 1
+              }}
+            >
+              Selecciona el tipo de póliza
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  select
+                  label="Categoría"
+                  value={categoriaPoliza}
+                  onChange={e => {
+                    setCategoriaPoliza(e.target.value);
+                    setTipoPoliza(""); // Limpiar tipo al cambiar categoría
+                  }}
+                  fullWidth
+                  variant="outlined"
+                  required
+                >
+                  <MenuItem value="">Selecciona una categoría</MenuItem>
+                  <MenuItem value="VIDA">VIDA</MenuItem>
+                  <MenuItem value="ECOSISTEMA">ECOSISTEMA</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  select
+                  label="Tipo de póliza"
+                  value={tipoPoliza}
+                  onChange={e => setTipoPoliza(e.target.value)}
+                  fullWidth
+                  variant="outlined"
+                  required
+                  disabled={!categoriaPoliza}
+                >
+                  <MenuItem value="">Selecciona un tipo</MenuItem>
+                  {categoriaPoliza &&
+                    opcionesPoliza[categoriaPoliza].map(opcion => (
+                      <MenuItem key={opcion} value={opcion}>
+                        {opcion}
+                      </MenuItem>
+                    ))}
+                </TextField>
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* BLOQUE DE COTIZACIÓN */}
+          <Box
+            sx={{
+              maxWidth: 750,
+              margin: "32px auto 0 auto",
+              background: "#fff",
+              borderRadius: 3,
+              boxShadow: "0 2px 24px #b7e4fc33",
+              p: 4
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                color: "#1abc74",
+                mb: 2,
+                fontWeight: 700,
+                letterSpacing: 1
+              }}
+            >
+              Datos de la cotización
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <NumericFormat
+                  customInput={TextField}
+                  label="Suma asegurada"
+                  name="sumaAsegurada"
+                  fullWidth
+                  value={cotizacion.sumaAsegurada}
+                  onValueChange={(values) =>
+                    setCotizacion(cot => ({
+                      ...cot,
+                      sumaAsegurada: values.value
+                    }))
+                  }
+                  variant="outlined"
+                  required
+                  thousandSeparator="."
+                  decimalSeparator=","
+                  prefix="$ "
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <NumericFormat
+                  customInput={TextField}
+                  label="Prima mensual"
+                  name="primaMensual"
+                  fullWidth
+                  value={cotizacion.primaMensual}
+                  onValueChange={(values) =>
+                    setCotizacion(cot => ({
+                      ...cot,
+                      primaMensual: values.value
+                    }))
+                  }
+                  variant="outlined"
+                  required
+                  thousandSeparator="."
+                  decimalSeparator=","
+                  prefix="$ "
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Plazo de pagos (años)"
+                  name="plazoPagos"
+                  fullWidth
+                  value={cotizacion.plazoPagos}
+                  onChange={handleCotizacionChange}
+                  variant="outlined"
+                  required
+                  type="number"
+                  inputProps={{ min: 1, max: 99 }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <NumericFormat
+                  customInput={TextField}
+                  label="Retorno de capital (si aplica)"
+                  name="retornoCapital"
+                  fullWidth
+                  value={cotizacion.retornoCapital}
+                  onValueChange={(values) =>
+                    setCotizacion(cot => ({
+                      ...cot,
+                      retornoCapital: values.value
+                    }))
+                  }
+                  variant="outlined"
+                  thousandSeparator="."
+                  decimalSeparator=","
+                  prefix="$ "
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  label="Notas adicionales / Observaciones"
+                  name="notas"
+                  fullWidth
+                  multiline
+                  minRows={2}
+                  maxRows={4}
+                  value={cotizacion.notas}
+                  onChange={handleCotizacionChange}
+                  variant="outlined"
+                />
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* BLOQUE DE COBERTURAS DINÁMICAS */}
+          <Box
+            sx={{
+              maxWidth: 750,
+              margin: "32px auto 0 auto",
+              background: "#fff",
+              borderRadius: 3,
+              boxShadow: "0 2px 24px #b7e4fc33",
+              p: 4
+            }}
+          >
+            <CoberturasDinamicas
+              value={coberturasSeleccionadas}
+              onChange={setCoberturasSeleccionadas}
+            />
+          </Box>
+
+          {/* BOTÓN FINAL */}
+          <Box
+            sx={{
+              maxWidth: 750,
+              margin: "32px auto 40px auto",
+              textAlign: "center"
+            }}
+          >
+            <Button
+              variant="contained"
+              color="success"
+              size="large"
+              sx={{
+                px: 5,
+                borderRadius: 2,
+                fontWeight: 700,
+                fontSize: 18
+              }}
+              disabled={!datosCompletos}
+              onClick={handleGenerarResumen}
+            >
+              Generar cotización y compartir
+            </Button>
+            {!datosCompletos && (
+              <Typography sx={{ color: "#aaa", mt: 2, fontSize: 15 }}>
+                Completa todos los datos y agrega al menos una cobertura para continuar
+              </Typography>
+            )}
+          </Box>
         </>
       )}
 
@@ -622,9 +602,20 @@ export default function App() {
           }}
           id="resumen-cotizacion"
         >
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 4 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: 4
+            }}
+          >
             <Box>
-              <img src={metlifeLogo} alt="Metlife Logo" style={{ height: 38, marginBottom: 12 }} />
+              <img
+                src={metlifeLogo}
+                alt="Metlife Logo"
+                style={{ height: 38, marginBottom: 12 }}
+              />
               <Typography variant="h5" sx={{ fontWeight: 700 }}>
                 Cotización de Seguro de Vida / Ecosistema
               </Typography>
@@ -644,20 +635,37 @@ export default function App() {
           {/* Datos del Cliente */}
           <Grid container spacing={2} sx={{ mb: 2 }}>
             <Grid item xs={12} md={7}>
-              <Typography variant="subtitle1" sx={{ color: "#777", fontWeight: 700 }}>
+              <Typography
+                variant="subtitle1"
+                sx={{ color: "#777", fontWeight: 700 }}
+              >
                 Cliente:
               </Typography>
               <Typography variant="body1" sx={{ fontWeight: 600 }}>
                 {cliente.nombre}
               </Typography>
-              <Typography variant="body2">Cédula: {cliente.cedula || "-"}</Typography>
-              <Typography variant="body2">Correo: {cliente.correo || "-"}</Typography>
-              <Typography variant="body2">Celular: {cliente.celular || "-"}</Typography>
-              <Typography variant="body2">Edad: {cliente.edad || "-"} &nbsp;|&nbsp; Género: {cliente.genero || "-"}</Typography>
-              <Typography variant="body2">Ciudad: {cliente.ciudad || "-"}</Typography>
+              <Typography variant="body2">
+                Cédula: {cliente.cedula || "-"}
+              </Typography>
+              <Typography variant="body2">
+                Correo: {cliente.correo || "-"}
+              </Typography>
+              <Typography variant="body2">
+                Celular: {cliente.celular || "-"}
+              </Typography>
+              <Typography variant="body2">
+                Edad: {cliente.edad || "-"} &nbsp;|&nbsp; Género:{" "}
+                {cliente.genero || "-"}
+              </Typography>
+              <Typography variant="body2">
+                Ciudad: {cliente.ciudad || "-"}
+              </Typography>
             </Grid>
             <Grid item xs={12} md={5}>
-              <Typography variant="subtitle1" sx={{ color: "#777", fontWeight: 700 }}>
+              <Typography
+                variant="subtitle1"
+                sx={{ color: "#777", fontWeight: 700 }}
+              >
                 Póliza:
               </Typography>
               <Typography variant="body2">
@@ -667,29 +675,64 @@ export default function App() {
                 Tipo: <b>{tipoPoliza}</b>
               </Typography>
               <Typography variant="body2">
-                Plazo de pagos: <b>{cotizacion.plazoPagos || "-"} años</b>
+                Plazo de pagos:{" "}
+                <b>{cotizacion.plazoPagos || "-"} años</b>
               </Typography>
             </Grid>
           </Grid>
           <Divider sx={{ mb: 3 }} />
 
           {/* Tabla de Coberturas */}
-          <Typography variant="h6" sx={{ color: "#1abc74", mb: 2, fontWeight: 700 }}>
+          <Typography
+            variant="h6"
+            sx={{ color: "#1abc74", mb: 2, fontWeight: 700 }}
+          >
             Coberturas incluidas
           </Typography>
-          <Box sx={{ overflowX: 'auto', mb: 2 }}>
-            <table style={{ borderCollapse: 'collapse', width: '100%', fontFamily: 'inherit', fontSize: 16 }}>
+          <Box sx={{ overflowX: "auto", mb: 2 }}>
+            <table
+              style={{
+                borderCollapse: "collapse",
+                width: "100%",
+                fontFamily: "inherit",
+                fontSize: 16
+              }}
+            >
               <thead style={{ background: "#e4f8f5" }}>
                 <tr>
-                  <th style={{ border: "1px solid #ddd", padding: 10, textAlign: "left" }}>Cobertura</th>
-                  <th style={{ border: "1px solid #ddd", padding: 10, textAlign: "center" }}>Valor asegurado</th>
+                  <th
+                    style={{
+                      border: "1px solid #ddd",
+                      padding: 10,
+                      textAlign: "left"
+                    }}
+                  >
+                    Cobertura
+                  </th>
+                  <th
+                    style={{
+                      border: "1px solid #ddd",
+                      padding: 10,
+                      textAlign: "center"
+                    }}
+                  >
+                    Valor asegurado
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {coberturasSeleccionadas.map(cob => (
-                  <tr key={cob.nombre}>
-                    <td style={{ border: "1px solid #eee", padding: 10 }}>{cob.nombre}</td>
-                    <td style={{ border: "1px solid #eee", padding: 10, textAlign: "center" }}>
+                {coberturasSeleccionadas.map((cob, idx) => (
+                  <tr key={idx}>
+                    <td style={{ border: "1px solid #eee", padding: 10 }}>
+                      {cob.nombre}
+                    </td>
+                    <td
+                      style={{
+                        border: "1px solid #eee",
+                        padding: 10,
+                        textAlign: "center"
+                      }}
+                    >
                       {formatCurrency(cob.valor)}
                     </td>
                   </tr>
@@ -700,20 +743,43 @@ export default function App() {
           <Divider sx={{ mb: 3 }} />
 
           {/* Resumen de suma y prima */}
-          <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 6, mb: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 6,
+              mb: 2
+            }}
+          >
             <Box>
-              <Typography variant="subtitle2" sx={{ color: "#888", fontWeight: 600 }}>
+              <Typography
+                variant="subtitle2"
+                sx={{ color: "#888", fontWeight: 600 }}
+              >
                 Suma asegurada total:
               </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 700, fontSize: 20 }}>
+              <Typography
+                variant="body1"
+                sx={{ fontWeight: 700, fontSize: 20 }}
+              >
                 {formatCurrency(cotizacion.sumaAsegurada)}
               </Typography>
             </Box>
             <Box>
-              <Typography variant="subtitle2" sx={{ color: "#888", fontWeight: 600 }}>
+              <Typography
+                variant="subtitle2"
+                sx={{ color: "#888", fontWeight: 600 }}
+              >
                 Prima mensual:
               </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 700, fontSize: 20, color: "#1abc74" }}>
+              <Typography
+                variant="body1"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: 20,
+                  color: "#1abc74"
+                }}
+              >
                 {formatCurrency(cotizacion.primaMensual)}
               </Typography>
             </Box>
@@ -721,27 +787,55 @@ export default function App() {
 
           {/* Notas */}
           {cotizacion.notas && (
-            <Box sx={{ background: "#f9fcfa", borderRadius: 2, p: 2, mb: 2 }}>
-              <Typography variant="subtitle2" sx={{ color: "#1abc74" }}>
+            <Box
+              sx={{
+                background: "#f9fcfa",
+                borderRadius: 2,
+                p: 2,
+                mb: 2
+              }}
+            >
+              <Typography
+                variant="subtitle2"
+                sx={{ color: "#1abc74" }}
+              >
                 Notas/Observaciones:
               </Typography>
-              <Typography variant="body2">{cotizacion.notas}</Typography>
+              <Typography variant="body2">
+                {cotizacion.notas}
+              </Typography>
             </Box>
           )}
 
           {/* Datos de la asesora al pie */}
           <Divider sx={{ mb: 2 }} />
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Avatar src={asesoraFoto} alt={datosAsesora.nombre} sx={{ width: 48, height: 48 }} />
+            <Avatar
+              src={asesoraFoto}
+              alt={datosAsesora.nombre}
+              sx={{ width: 48, height: 48 }}
+            />
             <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{datosAsesora.nombre}</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                {datosAsesora.nombre}
+              </Typography>
               <Typography variant="body2">{datosAsesora.cargo}</Typography>
               <Typography variant="body2">
-                <EmailIcon sx={{ fontSize: 16, verticalAlign: "middle" }} />{" "}
+                <EmailIcon
+                  sx={{
+                    fontSize: 16,
+                    verticalAlign: "middle"
+                  }}
+                />{" "}
                 {datosAsesora.correo}
               </Typography>
               <Typography variant="body2">
-                <PhoneIphoneIcon sx={{ fontSize: 16, verticalAlign: "middle" }} />{" "}
+                <PhoneIphoneIcon
+                  sx={{
+                    fontSize: 16,
+                    verticalAlign: "middle"
+                  }}
+                />{" "}
                 {datosAsesora.celular}
               </Typography>
             </Box>
@@ -762,7 +856,7 @@ export default function App() {
               startIcon={<SendIcon />}
               color="primary"
               sx={{ fontWeight: 700, flex: 1, minWidth: 170 }}
-              onClick={handleEnviarCorreo}
+              onClick={handleDescargarYEnviarCorreo}
             >
               Enviar por correo
             </Button>
@@ -771,7 +865,7 @@ export default function App() {
               startIcon={<WhatsAppIcon />}
               color="success"
               sx={{ fontWeight: 700, flex: 1, minWidth: 170 }}
-              onClick={handleEnviarWhatsApp}
+              onClick={handleDescargarYEnviarWhatsApp}
             >
               Enviar por WhatsApp
             </Button>
