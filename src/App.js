@@ -1,26 +1,13 @@
 import React, { useState } from "react";
-import {
-  Box,
-  Typography,
-  Avatar,
-  Link,
-  TextField,
-  MenuItem,
-  Button,
-  Grid,
-  InputAdornment,
-  Divider
-} from "@mui/material";
-import EmailIcon from "@mui/icons-material/Email";
-import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
-import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
-import WhatsAppIcon from "@mui/icons-material/WhatsApp";
-import SendIcon from "@mui/icons-material/Send";
+import { Box, Typography, Button, Grid, Divider, TextField, MenuItem } from "@mui/material";
 import { NumericFormat } from "react-number-format";
 import metlifeLogo from "./metlife-logo.png";
 import asesoraFoto from "./asesora.jpg";
 import CoberturasDinamicas from "./components/CoberturasDinamicas";
+import CoberturasFijas from "./components/CoberturasFijas";
+import PdfPortada from "./components/PdfPortada";
 import html2pdf from "html2pdf.js";
+import "./App.css"; // Para los estilos Excel y .no-break
 
 const datosAsesora = {
   nombre: "Juliana Arango",
@@ -48,6 +35,26 @@ const opcionesPoliza = {
   ]
 };
 
+const opcionesCoberturasFijas = [
+  "Desmembración por accidente",
+  "Muerte por cualquier causa",
+  "Exoneración de pago de primas",
+  "Fractura de huesos y quemaduras graves",
+  "Incapacidad total y permanente",
+  "Reembolso por gastos médicos",
+  "Renta diaria por hospitalización en uci por accidente o enfermedad",
+  "Renta diaria por hospitalización por accidente o enfermedad",
+  "Enfermedades graves",
+  "cancer",
+  "Asistencia en viaje internacional",
+  "Auxilio gastos funerarios",
+  "asistencia médica",
+  "conductor  elegido",
+  "emergencia Odontologica",
+  "Muerte por accidente",
+  "asistencia en nutrición"
+];
+
 function formatCurrency(value) {
   if (!value) return "$ 0";
   return (
@@ -61,7 +68,6 @@ function formatCurrency(value) {
 export default function App() {
   const [cliente, setCliente] = useState({
     nombre: "",
-    cedula: "",
     correo: "",
     celular: "",
     edad: "",
@@ -73,31 +79,32 @@ export default function App() {
   const [cotizacion, setCotizacion] = useState({
     sumaAsegurada: "",
     primaMensual: "",
-    plazoPagos: "",
     retornoCapital: "",
     notas: ""
   });
-  const [coberturasSeleccionadas, setCoberturasSeleccionadas] = useState([]);
+  const [coberturasFijas, setCoberturasFijas] = useState([]);
+  const [coberturasLibres, setCoberturasLibres] = useState([]);
   const [showResumen, setShowResumen] = useState(false);
+  const [datosAdicionales, setDatosAdicionales] = useState({
+    primaInversion: "",
+    totalInversion: "",
+    asistenciaViaje: "INCLUIDO",
+    aniosAcumulacion: "",
+    valorAcumulado: ""
+  });
+  const [generandoPDF, setGenerandoPDF] = useState(false);
 
-  // Cliente
-  const handleClienteChange = (e) => {
-    setCliente({ ...cliente, [e.target.name]: e.target.value });
-  };
-  // Cotización
-  const handleCotizacionChange = (e) => {
-    setCotizacion({ ...cotizacion, [e.target.name]: e.target.value });
-  };
+  const handleClienteChange = (e) => setCliente({ ...cliente, [e.target.name]: e.target.value });
+  const handleCotizacionChange = (e) => setCotizacion({ ...cotizacion, [e.target.name]: e.target.value });
+  const handleDatosAdicionalesChange = (name, value) => setDatosAdicionales(prev => ({ ...prev, [name]: value }));
 
-  // Acciones de resumen/generar cotización
-  const handleGenerarResumen = () => {
-    setShowResumen(true);
-    // Aquí podrías generar el PDF, enviar email, WhatsApp, etc.
-  };
+  const handleGenerarResumen = () => setShowResumen(true);
 
-  const handleDescargarPDF = () => {
-    const resumen = document.getElementById("resumen-cotizacion");
-    if (resumen) {
+  const handleDescargarPDF = async () => {
+    setGenerandoPDF(true);
+    // esperar a que el DOM actualice
+    setTimeout(() => {
+      const element = document.getElementById("pdf-content");
       html2pdf()
         .set({
           margin: 0.5,
@@ -105,12 +112,12 @@ export default function App() {
           html2canvas: { scale: 2 },
           jsPDF: { unit: "in", format: "letter", orientation: "portrait" }
         })
-        .from(resumen)
-        .save();
-    }
+        .from(element)
+        .save()
+        .then(() => setGenerandoPDF(false));
+    }, 150);
   };
 
-  // Correos y WhatsApp: Descargar PDF y luego abrir enlace
   const handleDescargarYEnviarCorreo = () => {
     handleDescargarPDF();
     setTimeout(() => {
@@ -143,12 +150,24 @@ export default function App() {
     window.open(`https://wa.me/${celular}?text=${mensaje}`);
   };
 
-  // Validación básica para mostrar el botón de resumen
   const datosCompletos =
     cliente.nombre &&
     tipoPoliza &&
     cotizacion.primaMensual &&
-    coberturasSeleccionadas.length > 0;
+    (
+      coberturasFijas.some(c => c.valor) ||
+      coberturasLibres.length > 0
+    ) &&
+    datosAdicionales.primaInversion &&
+    datosAdicionales.totalInversion &&
+    datosAdicionales.asistenciaViaje &&
+    datosAdicionales.aniosAcumulacion &&
+    datosAdicionales.valorAcumulado;
+
+  const coberturasSeleccionadas = [
+    ...coberturasFijas.filter(cob => cob.valor),
+    ...coberturasLibres
+  ];
 
   return (
     <Box
@@ -181,14 +200,16 @@ export default function App() {
           mt: 3
         }}
       >
-        <Avatar
+        <img
           src={asesoraFoto}
           alt={datosAsesora.nombre}
-          sx={{
+          style={{
             width: 120,
             height: 120,
+            borderRadius: "50%",
             border: "5px solid #17d4b6",
-            boxShadow: "0 2px 16px #1abc7480"
+            boxShadow: "0 2px 16px #1abc7480",
+            objectFit: "cover"
           }}
         />
         <Typography variant="h5" sx={{ fontWeight: 700, mt: 2 }}>
@@ -197,37 +218,12 @@ export default function App() {
         <Typography sx={{ color: "#757575", fontSize: 20, mb: 1 }}>
           {datosAsesora.cargo}
         </Typography>
-        <Box
-          sx={{
-            display: "flex",
-            gap: 2,
-            alignItems: "center",
-            mb: 2
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <EmailIcon sx={{ color: "#17d4b6", mr: 0.5 }} />
-            <Link
-              href={`mailto:${datosAsesora.correo}`}
-              sx={{ color: "#1976d2", fontSize: 16, fontWeight: 500 }}
-              underline="hover"
-            >
-              {datosAsesora.correo}
-            </Link>
-          </Box>
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <PhoneIphoneIcon sx={{ color: "#17d4b6", ml: 2, mr: 0.5 }} />
-            <Link
-              href={`https://wa.me/${datosAsesora.celular.replace(/\D/g, "")}`}
-              sx={{ color: "#1976d2", fontSize: 16, fontWeight: 500 }}
-              underline="hover"
-              target="_blank"
-              rel="noopener"
-            >
-              {datosAsesora.celular}
-            </Link>
-          </Box>
-        </Box>
+        <Typography sx={{ fontSize: 16, color: "#1976d2" }}>
+          {datosAsesora.correo}
+        </Typography>
+        <Typography sx={{ fontSize: 16, color: "#1976d2" }}>
+          {datosAsesora.celular}
+        </Typography>
       </Box>
 
       {!showResumen && (
@@ -270,19 +266,6 @@ export default function App() {
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
-                  label="Cédula"
-                  name="cedula"
-                  fullWidth
-                  value={cliente.cedula}
-                  onChange={handleClienteChange}
-                  variant="outlined"
-                  required
-                  autoComplete="off"
-                  inputProps={{ maxLength: 15 }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
                   label="Correo electrónico"
                   name="correo"
                   type="email"
@@ -292,13 +275,6 @@ export default function App() {
                   variant="outlined"
                   required
                   autoComplete="off"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <EmailIcon color="primary" />
-                      </InputAdornment>
-                    )
-                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -311,16 +287,9 @@ export default function App() {
                   variant="outlined"
                   required
                   autoComplete="off"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <PhoneIphoneIcon color="primary" />
-                      </InputAdornment>
-                    )
-                  }}
                 />
               </Grid>
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={12} sm={3}>
                 <TextField
                   label="Edad"
                   name="edad"
@@ -333,7 +302,7 @@ export default function App() {
                   inputProps={{ min: 0, max: 100 }}
                 />
               </Grid>
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={12} sm={3}>
                 <TextField
                   select
                   label="Género"
@@ -350,7 +319,7 @@ export default function App() {
                   <MenuItem value="Otro">Otro</MenuItem>
                 </TextField>
               </Grid>
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   label="Ciudad"
                   name="ciudad"
@@ -395,7 +364,7 @@ export default function App() {
                   value={categoriaPoliza}
                   onChange={e => {
                     setCategoriaPoliza(e.target.value);
-                    setTipoPoliza(""); // Limpiar tipo al cambiar categoría
+                    setTipoPoliza("");
                   }}
                   fullWidth
                   variant="outlined"
@@ -493,19 +462,6 @@ export default function App() {
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Plazo de pagos (años)"
-                  name="plazoPagos"
-                  fullWidth
-                  value={cotizacion.plazoPagos}
-                  onChange={handleCotizacionChange}
-                  variant="outlined"
-                  required
-                  type="number"
-                  inputProps={{ min: 1, max: 99 }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
                 <NumericFormat
                   customInput={TextField}
                   label="Retorno de capital (si aplica)"
@@ -540,7 +496,7 @@ export default function App() {
             </Grid>
           </Box>
 
-          {/* BLOQUE DE COBERTURAS DINÁMICAS */}
+          {/* BLOQUE DE COBERTURAS FIJAS Y DINÁMICAS */}
           <Box
             sx={{
               maxWidth: 750,
@@ -551,10 +507,110 @@ export default function App() {
               p: 4
             }}
           >
-            <CoberturasDinamicas
-              value={coberturasSeleccionadas}
-              onChange={setCoberturasSeleccionadas}
+            <CoberturasFijas
+              value={coberturasFijas}
+              onChange={setCoberturasFijas}
+              opciones={opcionesCoberturasFijas}
             />
+            <Box sx={{ mt: 4 }}>
+              <CoberturasDinamicas
+                value={coberturasLibres}
+                onChange={setCoberturasLibres}
+              />
+            </Box>
+          </Box>
+
+          {/* BLOQUE DE DATOS ADICIONALES */}
+          <Box
+            sx={{
+              maxWidth: 750,
+              margin: "32px auto 0 auto",
+              background: "#fff",
+              borderRadius: 3,
+              boxShadow: "0 2px 24px #b7e4fc33",
+              p: 4
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                color: "#1abc74",
+                mb: 2,
+                fontWeight: 700,
+                letterSpacing: 1
+              }}
+            >
+              Datos adicionales de inversión
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <NumericFormat
+                  customInput={TextField}
+                  label="Prima de Inversión Mensual"
+                  value={datosAdicionales.primaInversion}
+                  onValueChange={(values) =>
+                    handleDatosAdicionalesChange("primaInversion", values.value)
+                  }
+                  thousandSeparator="."
+                  decimalSeparator=","
+                  prefix="$ "
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <NumericFormat
+                  customInput={TextField}
+                  label="Total Inversión Mensual"
+                  value={datosAdicionales.totalInversion}
+                  onValueChange={(values) =>
+                    handleDatosAdicionalesChange("totalInversion", values.value)
+                  }
+                  thousandSeparator="."
+                  decimalSeparator=","
+                  prefix="$ "
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  select
+                  label="Asistencia Viaje Internacional"
+                  value={datosAdicionales.asistenciaViaje}
+                  onChange={e =>
+                    handleDatosAdicionalesChange("asistenciaViaje", e.target.value)
+                  }
+                  fullWidth
+                >
+                  <MenuItem value="INCLUIDO">Incluido</MenuItem>
+                  <MenuItem value="NO INCLUIDO">No incluido</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid item xs={6} sm={3}>
+                <TextField
+                  label="Años (Acumulación de Capital)"
+                  type="number"
+                  value={datosAdicionales.aniosAcumulacion}
+                  onChange={e =>
+                    handleDatosAdicionalesChange("aniosAcumulacion", e.target.value)
+                  }
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={6} sm={3}>
+                <NumericFormat
+                  customInput={TextField}
+                  label="Valor Acumulado"
+                  value={datosAdicionales.valorAcumulado}
+                  onValueChange={(values) =>
+                    handleDatosAdicionalesChange("valorAcumulado", values.value)
+                  }
+                  thousandSeparator="."
+                  decimalSeparator=","
+                  prefix="$ "
+                  fullWidth
+                />
+              </Grid>
+            </Grid>
           </Box>
 
           {/* BOTÓN FINAL */}
@@ -582,302 +638,334 @@ export default function App() {
             </Button>
             {!datosCompletos && (
               <Typography sx={{ color: "#aaa", mt: 2, fontSize: 15 }}>
-                Completa todos los datos y agrega al menos una cobertura para continuar
+                Completa todos los datos y agrega al menos una cobertura y los datos adicionales para continuar
               </Typography>
             )}
           </Box>
         </>
       )}
 
-      {/* RESUMEN FINAL Y ACCIONES */}
       {showResumen && (
-        <Box
-          sx={{
-            maxWidth: 900,
-            margin: "32px auto 40px auto",
-            background: "#fff",
-            borderRadius: 5,
-            boxShadow: "0 2px 32px #b7e4fc44",
-            p: { xs: 2, md: 5 }
-          }}
-          id="resumen-cotizacion"
-        >
+        <div id="pdf-content">
+          {generandoPDF && (
+            <div style={{ marginBottom: 40 }}>
+              <PdfPortada />
+              <div style={{ pageBreakAfter: "always" }} />
+            </div>
+          )}
           <Box
             sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              mb: 4
+              maxWidth: 900,
+              margin: "32px auto 40px auto",
+              background: "#fff",
+              borderRadius: 5,
+              boxShadow: "0 2px 32px #b7e4fc44",
+              p: { xs: 2, md: 5 }
             }}
+            id="resumen-cotizacion"
           >
-            <Box>
-              <img
-                src={metlifeLogo}
-                alt="Metlife Logo"
-                style={{ height: 38, marginBottom: 12 }}
-              />
-              <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                Cotización de Seguro de Vida / Ecosistema
-              </Typography>
-            </Box>
-            <Avatar
-              src={asesoraFoto}
-              alt={datosAsesora.nombre}
+            <Box
               sx={{
-                width: 76,
-                height: 76,
-                border: "3px solid #17d4b6",
-                boxShadow: "0 2px 12px #1abc7480"
-              }}
-            />
-          </Box>
-          <Divider sx={{ mb: 3 }} />
-          {/* Datos del Cliente */}
-          <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid item xs={12} md={7}>
-              <Typography
-                variant="subtitle1"
-                sx={{ color: "#777", fontWeight: 700 }}
-              >
-                Cliente:
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                {cliente.nombre}
-              </Typography>
-              <Typography variant="body2">
-                Cédula: {cliente.cedula || "-"}
-              </Typography>
-              <Typography variant="body2">
-                Correo: {cliente.correo || "-"}
-              </Typography>
-              <Typography variant="body2">
-                Celular: {cliente.celular || "-"}
-              </Typography>
-              <Typography variant="body2">
-                Edad: {cliente.edad || "-"} &nbsp;|&nbsp; Género:{" "}
-                {cliente.genero || "-"}
-              </Typography>
-              <Typography variant="body2">
-                Ciudad: {cliente.ciudad || "-"}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} md={5}>
-              <Typography
-                variant="subtitle1"
-                sx={{ color: "#777", fontWeight: 700 }}
-              >
-                Póliza:
-              </Typography>
-              <Typography variant="body2">
-                Categoría: <b>{categoriaPoliza}</b>
-              </Typography>
-              <Typography variant="body2">
-                Tipo: <b>{tipoPoliza}</b>
-              </Typography>
-              <Typography variant="body2">
-                Plazo de pagos:{" "}
-                <b>{cotizacion.plazoPagos || "-"} años</b>
-              </Typography>
-            </Grid>
-          </Grid>
-          <Divider sx={{ mb: 3 }} />
-
-          {/* Tabla de Coberturas */}
-          <Typography
-            variant="h6"
-            sx={{ color: "#1abc74", mb: 2, fontWeight: 700 }}
-          >
-            Coberturas incluidas
-          </Typography>
-          <Box sx={{ overflowX: "auto", mb: 2 }}>
-            <table
-              style={{
-                borderCollapse: "collapse",
-                width: "100%",
-                fontFamily: "inherit",
-                fontSize: 16
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                mb: 4
               }}
             >
-              <thead style={{ background: "#e4f8f5" }}>
-                <tr>
-                  <th
-                    style={{
-                      border: "1px solid #ddd",
-                      padding: 10,
-                      textAlign: "left"
-                    }}
-                  >
-                    Cobertura
-                  </th>
-                  <th
-                    style={{
-                      border: "1px solid #ddd",
-                      padding: 10,
-                      textAlign: "center"
-                    }}
-                  >
-                    Valor asegurado
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {coberturasSeleccionadas.map((cob, idx) => (
-                  <tr key={idx}>
-                    <td style={{ border: "1px solid #eee", padding: 10 }}>
-                      {cob.nombre}
+              <Box>
+                <img
+                  src={metlifeLogo}
+                  alt="Metlife Logo"
+                  style={{ height: 38, marginBottom: 12 }}
+                />
+                <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                  Cotización de Seguro de Vida / Ecosistema
+                </Typography>
+              </Box>
+              <img
+                src={asesoraFoto}
+                alt={datosAsesora.nombre}
+                style={{
+                  width: 76,
+                  height: 76,
+                  borderRadius: "50%",
+                  border: "3px solid #17d4b6",
+                  boxShadow: "0 2px 12px #1abc7480",
+                  objectFit: "cover"
+                }}
+              />
+            </Box>
+            <Divider sx={{ mb: 3 }} />
+            <Grid container spacing={2} sx={{ mb: 2 }}>
+              <Grid item xs={12} md={7}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ color: "#777", fontWeight: 700 }}
+                >
+                  Cliente:
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                  {cliente.nombre}
+                </Typography>
+                <Typography variant="body2">
+                  Correo: {cliente.correo || "-"}
+                </Typography>
+                <Typography variant="body2">
+                  Celular: {cliente.celular || "-"}
+                </Typography>
+                <Typography variant="body2">
+                  Edad: {cliente.edad || "-"} &nbsp;|&nbsp; Género:{" "}
+                  {cliente.genero || "-"}
+                </Typography>
+                <Typography variant="body2">
+                  Ciudad: {cliente.ciudad || "-"}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={5}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ color: "#777", fontWeight: 700 }}
+                >
+                  Póliza:
+                </Typography>
+                <Typography variant="body2">
+                  Categoría: <b>{categoriaPoliza}</b>
+                </Typography>
+                <Typography variant="body2">
+                  Tipo: <b>{tipoPoliza}</b>
+                </Typography>
+              </Grid>
+            </Grid>
+            <Divider sx={{ mb: 3 }} />
+
+            {/* Tabla Coberturas EXCEL */}
+            <Typography
+              variant="h6"
+              sx={{ color: "#1abc74", mb: 2, fontWeight: 700 }}
+            >
+              Coberturas incluidas
+            </Typography>
+            <div style={{ overflowX: "auto", marginBottom: 24 }}>
+              <table className="excel-table">
+                <thead>
+                  <tr>
+                    <th>Cobertura</th>
+                    <th style={{ textAlign: "right" }}>Valor asegurado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {coberturasSeleccionadas.map((cob, idx) => (
+                    <tr key={idx}>
+                      <td>{cob.nombre}</td>
+                      <td style={{ textAlign: "right" }}>{formatCurrency(cob.valor)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <Divider sx={{ mb: 3 }} />
+
+            {/* BLOQUE VERDE - NO BREAK */}
+            <Box
+              className="no-break"
+              sx={{
+                background: "#aeea8c",
+                borderRadius: 2,
+                p: 2,
+                mb: 3
+              }}
+            >
+              <table style={{
+                width: "100%",
+                fontFamily: "inherit",
+                fontSize: 17,
+                background: "#aeea8c",
+                borderRadius: "8px"
+              }}>
+                <tbody>
+                  <tr>
+                    <td style={{ fontWeight: 700, padding: 6 }}>
+                      PRIMA DE INVERSIÓN MENSUAL
                     </td>
                     <td
                       style={{
-                        border: "1px solid #eee",
-                        padding: 10,
-                        textAlign: "center"
+                        fontWeight: 700,
+                        textAlign: "right",
+                        padding: 6
                       }}
                     >
-                      {formatCurrency(cob.valor)}
+                      {formatCurrency(datosAdicionales.primaInversion)}
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </Box>
-          <Divider sx={{ mb: 3 }} />
-
-          {/* Resumen de suma y prima */}
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: 6,
-              mb: 2
-            }}
-          >
-            <Box>
-              <Typography
-                variant="subtitle2"
-                sx={{ color: "#888", fontWeight: 600 }}
-              >
-                Suma asegurada total:
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{ fontWeight: 700, fontSize: 20 }}
-              >
-                {formatCurrency(cotizacion.sumaAsegurada)}
-              </Typography>
+                  <tr>
+                    <td style={{ fontWeight: 700, padding: 6 }}>
+                      TOTAL INVERSIÓN MENSUAL
+                    </td>
+                    <td
+                      style={{
+                        fontWeight: 700,
+                        textAlign: "right",
+                        padding: 6
+                      }}
+                    >
+                      {formatCurrency(datosAdicionales.totalInversion)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 700, padding: 6 }}>
+                      ASISTENCIA VIAJE INTERNACIONAL
+                    </td>
+                    <td
+                      style={{
+                        fontWeight: 700,
+                        textAlign: "right",
+                        padding: 6
+                      }}
+                    >
+                      {datosAdicionales.asistenciaViaje === "INCLUIDO"
+                        ? "INCLUIDO"
+                        : "NO INCLUIDO"}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 700, padding: 6 }}>
+                      ACUMULACIÓN DE CAPITAL CUANDO TU CUMPAS{" "}
+                      {datosAdicionales.aniosAcumulacion
+                        ? datosAdicionales.aniosAcumulacion
+                        : "___"}{" "}
+                      AÑOS
+                    </td>
+                    <td
+                      style={{
+                        fontWeight: 700,
+                        textAlign: "right",
+                        padding: 6
+                      }}
+                    >
+                      {formatCurrency(datosAdicionales.valorAcumulado)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </Box>
-            <Box>
-              <Typography
-                variant="subtitle2"
-                sx={{ color: "#888", fontWeight: 600 }}
-              >
-                Prima mensual:
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  fontWeight: 700,
-                  fontSize: 20,
-                  color: "#1abc74"
-                }}
-              >
-                {formatCurrency(cotizacion.primaMensual)}
-              </Typography>
-            </Box>
-          </Box>
 
-          {/* Notas */}
-          {cotizacion.notas && (
+            {/* Suma asegurada y Prima mensual */}
             <Box
               sx={{
-                background: "#f9fcfa",
-                borderRadius: 2,
-                p: 2,
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 6,
                 mb: 2
               }}
             >
-              <Typography
-                variant="subtitle2"
-                sx={{ color: "#1abc74" }}
-              >
-                Notas/Observaciones:
-              </Typography>
-              <Typography variant="body2">
-                {cotizacion.notas}
-              </Typography>
+              <Box>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ color: "#888", fontWeight: 600 }}
+                >
+                  Suma asegurada total:
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{ fontWeight: 700, fontSize: 20 }}
+                >
+                  {formatCurrency(cotizacion.sumaAsegurada)}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ color: "#888", fontWeight: 600 }}
+                >
+                  Prima mensual:
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: 20,
+                    color: "#1abc74"
+                  }}
+                >
+                  {formatCurrency(cotizacion.primaMensual)}
+                </Typography>
+              </Box>
             </Box>
-          )}
 
-          {/* Datos de la asesora al pie */}
-          <Divider sx={{ mb: 2 }} />
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Avatar
-              src={asesoraFoto}
-              alt={datosAsesora.nombre}
-              sx={{ width: 48, height: 48 }}
-            />
-            <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                {datosAsesora.nombre}
-              </Typography>
-              <Typography variant="body2">{datosAsesora.cargo}</Typography>
-              <Typography variant="body2">
-                <EmailIcon
-                  sx={{
-                    fontSize: 16,
-                    verticalAlign: "middle"
-                  }}
-                />{" "}
-                {datosAsesora.correo}
-              </Typography>
-              <Typography variant="body2">
-                <PhoneIphoneIcon
-                  sx={{
-                    fontSize: 16,
-                    verticalAlign: "middle"
-                  }}
-                />{" "}
-                {datosAsesora.celular}
-              </Typography>
+            {cotizacion.notas && (
+              <Box
+                sx={{
+                  background: "#f9fcfa",
+                  borderRadius: 2,
+                  p: 2,
+                  mb: 2
+                }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  sx={{ color: "#1abc74" }}
+                >
+                  Notas/Observaciones:
+                </Typography>
+                <Typography variant="body2">
+                  {cotizacion.notas}
+                </Typography>
+              </Box>
+            )}
+
+            <Divider sx={{ mb: 2 }} />
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <img
+                src={asesoraFoto}
+                alt={datosAsesora.nombre}
+                style={{ width: 48, height: 48, borderRadius: "50%" }}
+              />
+              <Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                  {datosAsesora.nombre}
+                </Typography>
+                <Typography variant="body2">{datosAsesora.cargo}</Typography>
+                <Typography variant="body2">{datosAsesora.correo}</Typography>
+                <Typography variant="body2">{datosAsesora.celular}</Typography>
+              </Box>
             </Box>
+            {!generandoPDF && (
+              <Box sx={{ display: "flex", gap: 2, mt: 5, flexWrap: "wrap" }}>
+                <Button
+                  variant="contained"
+                  color="info"
+                  sx={{ fontWeight: 700, flex: 1, minWidth: 170 }}
+                  onClick={handleDescargarPDF}
+                >
+                  Descargar PDF
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{ fontWeight: 700, flex: 1, minWidth: 170 }}
+                  onClick={handleDescargarYEnviarCorreo}
+                >
+                  Enviar por correo
+                </Button>
+                <Button
+                  variant="contained"
+                  color="success"
+                  sx={{ fontWeight: 700, flex: 1, minWidth: 170 }}
+                  onClick={handleDescargarYEnviarWhatsApp}
+                >
+                  Enviar por WhatsApp
+                </Button>
+                <Button
+                  variant="outlined"
+                  sx={{ fontWeight: 700, flex: 1, minWidth: 170 }}
+                  onClick={() => setShowResumen(false)}
+                >
+                  Editar datos
+                </Button>
+              </Box>
+            )}
           </Box>
-          {/* Acciones finales */}
-          <Box sx={{ display: "flex", gap: 2, mt: 5, flexWrap: "wrap" }}>
-            <Button
-              variant="contained"
-              startIcon={<PictureAsPdfIcon />}
-              color="info"
-              sx={{ fontWeight: 700, flex: 1, minWidth: 170 }}
-              onClick={handleDescargarPDF}
-            >
-              Descargar PDF
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<SendIcon />}
-              color="primary"
-              sx={{ fontWeight: 700, flex: 1, minWidth: 170 }}
-              onClick={handleDescargarYEnviarCorreo}
-            >
-              Enviar por correo
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<WhatsAppIcon />}
-              color="success"
-              sx={{ fontWeight: 700, flex: 1, minWidth: 170 }}
-              onClick={handleDescargarYEnviarWhatsApp}
-            >
-              Enviar por WhatsApp
-            </Button>
-            <Button
-              variant="outlined"
-              sx={{ fontWeight: 700, flex: 1, minWidth: 170 }}
-              onClick={() => setShowResumen(false)}
-            >
-              Editar datos
-            </Button>
-          </Box>
-        </Box>
+        </div>
       )}
     </Box>
   );

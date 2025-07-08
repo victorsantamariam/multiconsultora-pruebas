@@ -1,97 +1,63 @@
-import React, { useState } from "react";
+import React from "react";
+import { Box, Typography, Grid, TextField, IconButton } from "@mui/material";
+import { NumericFormat } from "react-number-format";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { Button } from "@mui/material";
 
-function numberWithThousandSeparators(x) {
-  if (x === "" || x === null) return "";
-  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
-
-const CoberturasDinamicas = ({ value, onChange }) => {
-  const [nombreCobertura, setNombreCobertura] = useState("");
-  const [valorCobertura, setValorCobertura] = useState("");
-  const [coberturas, setCoberturas] = useState(value || []);
-
-  // Actualiza el estado interno y notifica al padre
-  const updateCoberturas = (nuevasCoberturas) => {
-    setCoberturas(nuevasCoberturas);
-    if (onChange) onChange(nuevasCoberturas);
+export default function CoberturasDinamicas({ value = [], onChange }) {
+  const handleNombre = (idx, nombre) => {
+    const updated = [...value];
+    updated[idx] = { ...updated[idx], nombre };
+    onChange(updated);
   };
-
-  const handleAgregar = () => {
-    if (!nombreCobertura || !valorCobertura) return;
-    const nuevaCobertura = {
-      nombre: nombreCobertura,
-      valor: parseFloat(valorCobertura.replace(/,/g, ""))
-    };
-    updateCoberturas([...coberturas, nuevaCobertura]);
-    setNombreCobertura("");
-    setValorCobertura("");
+  const handleValor = (idx, valor) => {
+    const updated = [...value];
+    updated[idx] = { ...updated[idx], valor };
+    onChange(updated);
   };
-
-  const handleEliminar = (idx) => {
-    const nuevasCoberturas = coberturas.filter((_, i) => i !== idx);
-    updateCoberturas(nuevasCoberturas);
+  const handleAdd = () => {
+    onChange([...value, { nombre: "", valor: "" }]);
   };
-
-  const handleValorChange = (e) => {
-    // Solo permite números y separador de miles
-    const raw = e.target.value.replace(/[^0-9]/g, "");
-    setValorCobertura(numberWithThousandSeparators(raw));
+  const handleRemove = (idx) => {
+    onChange(value.filter((_, i) => i !== idx));
   };
-
   return (
-    <div>
-      <h3>Agregar Coberturas</h3>
-      <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: 16 }}>
-        <input
-          type="text"
-          placeholder="Nombre de cobertura"
-          value={nombreCobertura}
-          onChange={(e) => setNombreCobertura(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Valor"
-          value={valorCobertura}
-          onChange={handleValorChange}
-          inputMode="numeric"
-        />
-        <button type="button" onClick={handleAgregar}>
-          Agregar
-        </button>
-      </div>
-      <div>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr>
-              <th style={{ textAlign: "left" }}>Cobertura</th>
-              <th style={{ textAlign: "right" }}>Valor</th>
-              <th>Eliminar</th>
-            </tr>
-          </thead>
-          <tbody>
-            {coberturas.map((cob, idx) => (
-              <tr key={idx}>
-                <td>{cob.nombre}</td>
-                <td style={{ textAlign: "right" }}>${numberWithThousandSeparators(cob.valor)}</td>
-                <td>
-                  <button type="button" onClick={() => handleEliminar(idx)}>
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {coberturas.length === 0 && (
-              <tr>
-                <td colSpan={3} style={{ textAlign: "center", color: "#888" }}>
-                  No hay coberturas agregadas
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <Box>
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+        Coberturas adicionales
+      </Typography>
+      {value.map((cob, idx) => (
+        <Grid container spacing={1} alignItems="center" key={idx} sx={{ mb: 1 }}>
+          <Grid item xs={6}>
+            <TextField
+              label="Cobertura"
+              value={cob.nombre}
+              onChange={e => handleNombre(idx, e.target.value)}
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={5}>
+            <NumericFormat
+              customInput={TextField}
+              label="Valor asegurado"
+              value={cob.valor}
+              onValueChange={v => handleValor(idx, v.value)}
+              thousandSeparator="."
+              decimalSeparator=","
+              prefix="$ "
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={1}>
+            <IconButton onClick={() => handleRemove(idx)}>
+              <DeleteIcon />
+            </IconButton>
+          </Grid>
+        </Grid>
+      ))}
+      <Button onClick={handleAdd} sx={{ mt: 1 }} variant="outlined">
+        Agregar cobertura
+      </Button>
+    </Box>
   );
-};
-
-export default CoberturasDinamicas;
+}
