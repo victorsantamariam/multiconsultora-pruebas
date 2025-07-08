@@ -6,59 +6,132 @@ import ShieldIcon from "@mui/icons-material/Shield";
 
 export default function PdfPortada() {
   return (
-    <Box sx={{
-      p: 5,
-      minHeight: "800px",
-      background: "#fff",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: "center"
-    }}>
-      <Typography variant="h5" align="center" fontWeight={700} sx={{ mb: 3 }}>
-        RESUMEN PROPUESTA METLIFE
-      </Typography>
-      <Typography align="center" sx={{ mb: 4, maxWidth: 600 }}>
-        Inicialmente son seguros que cubren muerte, invalidez (otras coberturas de seguro de vida) y también es una acumulación a mediano largo plazo y el retorno se realiza en los años estimados.
-      </Typography>
-      <Typography variant="h6" align="center" sx={{ mb: 2 }}>
-        ¿Por qué MetLife?
-      </Typography>
-      <Grid container spacing={3} justifyContent="center" sx={{ mb: 4, maxWidth: 900 }}>
-        <Grid item xs={12} md={4}>
-          <Box textAlign="center">
-            <PublicIcon sx={{ fontSize: 50, color: "#1976d2" }} />
-            <Typography fontWeight={700}>Experiencia</Typography>
-            <Typography sx={{ mt: 1 }}>
-              Trayectoria global de 155 años en 43 países, y más de 10 años en Colombia.
-            </Typography>
-          </Box>
+    <>
+      <Box
+        sx={{
+          width: "794px",
+          height: "950px", // ¡REDUCIDO! Así cabe el salto y no se generan páginas vacías
+          background: "#fff",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          p: 0,
+          m: 0,
+          boxSizing: "border-box",
+          overflow: "hidden",
+          position: "relative"
+        }}
+      >
+        {/* ...El mismo contenido de portada... */}
+        <Typography
+          variant="h5"
+          align="center"
+          fontWeight={700}
+          sx={{ mb: 1, mt: 2, letterSpacing: 0.5 }}
+        >
+          📝 Propuesta de Protección y Ahorro – MetLife
+        </Typography>
+        <Typography
+          variant="subtitle1"
+          align="center"
+          fontWeight={600}
+          sx={{ mb: 2, opacity: 0.8, fontSize: 18 }}
+        >
+          Resumen Ejecutivo
+        </Typography>
+        <Box sx={{ maxWidth: 540, mb: 2 }}>
+          <Typography align="center" sx={{ fontSize: 17, mb: 1 }}>
+            <b>¿Qué ofrece este plan?</b>
+          </Typography>
+          <Typography align="center" sx={{ color: "#444", fontSize: 15, lineHeight: 1.5 }}>
+            Una solución integral que combina:
+          </Typography>
+          <ul style={{ margin: "10px auto 0", maxWidth: 440, textAlign: "left", color: "#444", fontSize: 15, paddingLeft: 22 }}>
+            <li>
+              Cobertura en caso de fallecimiento e invalidez, junto con otros beneficios de un seguro de vida.
+            </li>
+            <li>
+              Acumulación de capital a mediano y largo plazo, con retorno proyectado.
+            </li>
+          </ul>
+        </Box>
+        <Typography
+          variant="h6"
+          align="center"
+          sx={{ mb: 1, mt: 1, color: "#1976d2", fontWeight: 700, fontSize: 18 }}
+        >
+          ¿Por qué elegir MetLife?
+        </Typography>
+        <Grid container spacing={2} justifyContent="center" sx={{ mb: 2, maxWidth: 700 }}>
+          <Grid item xs={12} md={4}>
+            <Box textAlign="center">
+              <PublicIcon sx={{ fontSize: 40, color: "#1976d2" }} />
+              <Typography fontWeight={700} sx={{ mt: 0.5, fontSize: 15 }}>
+                🌎 Experiencia internacional
+              </Typography>
+              <Typography sx={{ mt: 0.5, color: "#444", fontSize: 13 }}>
+                155 años de trayectoria global en 43 países y más de 10 años en Colombia.
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Box textAlign="center">
+              <VerifiedUserIcon sx={{ fontSize: 40, color: "#43a047" }} />
+              <Typography fontWeight={700} sx={{ mt: 0.5, fontSize: 15 }}>
+                🔒 Confianza comprobada
+              </Typography>
+              <Typography sx={{ mt: 0.5, color: "#444", fontSize: 13 }}>
+                Más de 160 mil millones de pesos pagados en siniestros en los últimos 3 años.
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Box textAlign="center">
+              <ShieldIcon sx={{ fontSize: 40, color: "#0277bd" }} />
+              <Typography fontWeight={700} sx={{ mt: 0.5, fontSize: 15 }}>
+                📊 Solidez financiera
+              </Typography>
+              <Typography sx={{ mt: 0.5, color: "#444", fontSize: 13 }}>
+                Calificación AA otorgada por Fitch Ratings, reflejando estabilidad y respaldo económico.
+              </Typography>
+            </Box>
+          </Grid>
         </Grid>
-        <Grid item xs={12} md={4}>
-          <Box textAlign="center">
-            <VerifiedUserIcon sx={{ fontSize: 50, color: "#43a047" }} />
-            <Typography fontWeight={700}>Confianza</Typography>
-            <Typography sx={{ mt: 1 }}>
-              Cerca de 160 mil millones de pesos pagados en siniestros en los últimos 3 años.
-            </Typography>
-          </Box>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Box textAlign="center">
-            <ShieldIcon sx={{ fontSize: 50, color: "#0277bd" }} />
-            <Typography fontWeight={700}>Solidez financiera</Typography>
-            <Typography sx={{ mt: 1 }}>
-              Contamos con calificación AA otorgada por Fitch Ratings.
-            </Typography>
-          </Box>
-        </Grid>
-      </Grid>
-      <Typography align="center" sx={{ fontStyle: "italic", fontWeight: 500, mb: 3, maxWidth: 650 }}>
-        Estas son las coberturas con las que iniciaría el tomador, cada año incrementan los valores con el IPC y de la misma forma la acumulación:
-      </Typography>
-      <Typography align="center" sx={{ maxWidth: 650 }}>
-        A continuación, te detallo beneficios del producto PUFF MetLife que marcan gran diferencia respecto compañías con su misma actividad. (PUFF)
-      </Typography>
-    </Box>
+        <Box sx={{ maxWidth: 540, mb: 2 }}>
+          <Typography
+            align="center"
+            sx={{
+              fontStyle: "italic",
+              fontWeight: 500,
+              mb: 1,
+              color: "#1abc74",
+              fontSize: 15
+            }}
+          >
+            Beneficios clave del producto:
+          </Typography>
+          <ul style={{ margin: "0 auto 0", maxWidth: 440, textAlign: "left", color: "#444", fontSize: 14, paddingLeft: 22 }}>
+            <li>
+              Coberturas iniciales que aumentan anualmente con el IPC.
+            </li>
+            <li>
+              Capital acumulado que también crece año a año.
+            </li>
+            <li>
+              Diferenciales únicos frente a otras compañías del mercado.
+            </li>
+          </ul>
+        </Box>
+        <Typography align="center" sx={{ maxWidth: 500, fontSize: 14, color: "#444" }}>
+          A continuación, te detallo beneficios del producto MetLife que marcan gran diferencia respecto a compañías con su misma actividad.
+        </Typography>
+      </Box>
+      <div style={{
+        width: "100%",
+        height: "1px",
+        pageBreakAfter: "always",
+      }} />
+    </>
   );
 }

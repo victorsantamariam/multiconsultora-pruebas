@@ -101,15 +101,14 @@ export default function App() {
 
   const handleDescargarPDF = async () => {
     setGenerandoPDF(true);
-    // esperar a que el DOM actualice
     setTimeout(() => {
       const element = document.getElementById("pdf-content");
       html2pdf()
         .set({
-          margin: 0.5,
+          margin: 0, // ¡Importantísimo! Así NO hay margen externo
           filename: `Cotizacion_${cliente.nombre || "cliente"}.pdf`,
           html2canvas: { scale: 2 },
-          jsPDF: { unit: "in", format: "letter", orientation: "portrait" }
+          jsPDF: { unit: "px", format: [794, 1122], orientation: "portrait" }
         })
         .from(element)
         .save()
@@ -460,7 +459,7 @@ export default function App() {
                   prefix="$ "
                 />
               </Grid>
-                <Grid item xs={12}>
+              <Grid item xs={12}>
                 <TextField
                   label="Notas adicionales / Observaciones"
                   name="notas"
@@ -626,17 +625,18 @@ export default function App() {
       )}
 
       {showResumen && (
-        <div id="pdf-content">
-          {generandoPDF && (
-            <div style={{ marginBottom: 40 }}>
-              <PdfPortada />
-              <div style={{ pageBreakAfter: "always" }} />
-            </div>
-          )}
+        <div id="pdf-content" style={{ margin: 0, padding: 0 }}>
+          {/* PORTADA Y SALTO DE PÁGINA */}
+           <div className="only-pdf"> </div>
+          <PdfPortada />
+          <div style={{ pageBreakAfter: "" }} />
+         
+
+          {/* COTIZACIÓN */}
           <Box
             sx={{
               maxWidth: 900,
-              margin: "32px auto 40px auto",
+              margin: "0 auto",
               background: "#fff",
               borderRadius: 5,
               boxShadow: "0 2px 32px #b7e4fc44",
@@ -894,21 +894,21 @@ export default function App() {
             )}
 
             <Divider sx={{ mb: 2 }} />
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <img
-                src={asesoraFoto}
-                alt={datosAsesora.nombre}
-                style={{ width: 48, height: 48, borderRadius: "50%" }}
-              />
-              <Box>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                  {datosAsesora.nombre}
-                </Typography>
-                <Typography variant="body2">{datosAsesora.cargo}</Typography>
-                <Typography variant="body2">{datosAsesora.correo}</Typography>
-                <Typography variant="body2">{datosAsesora.celular}</Typography>
-              </Box>
+            <Box className="no-break" sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+  <img
+    src={asesoraFoto}
+    alt={datosAsesora.nombre}
+    style={{ width: 48, height: 48, borderRadius: "50%" }}
+  />
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                {datosAsesora.nombre}
+              </Typography>
+              <Typography variant="body2">{datosAsesora.cargo}</Typography>
+              <Typography variant="body2">{datosAsesora.correo}</Typography>
+              <Typography variant="body2">{datosAsesora.celular}</Typography>
             </Box>
+          </Box>
             {!generandoPDF && (
               <Box sx={{ display: "flex", gap: 2, mt: 5, flexWrap: "wrap" }}>
                 <Button

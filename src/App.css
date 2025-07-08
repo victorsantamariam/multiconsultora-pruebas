@@ -58,3 +58,30 @@
   page-break-inside: avoid !important;
   break-inside: avoid !important;
 }
+
+@media print {
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .no-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}
+
+.only-pdf {
+  display: none;
+}
+@media print {
+  .only-pdf {
+    display: block !important;
+    width: 794px !important;   /* A4 a 96dpi */
+    margin: 0 auto !important; /* Centralizado al imprimir/PDF */
+  }
+}
+
+.no-break {
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
+}
