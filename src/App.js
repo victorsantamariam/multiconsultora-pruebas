@@ -79,7 +79,6 @@ export default function App() {
   const [cotizacion, setCotizacion] = useState({
     sumaAsegurada: "",
     primaMensual: "",
-    retornoCapital: "",
     notas: ""
   });
   const [coberturasFijas, setCoberturasFijas] = useState([]);
@@ -461,26 +460,7 @@ export default function App() {
                   prefix="$ "
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <NumericFormat
-                  customInput={TextField}
-                  label="Retorno de capital (si aplica)"
-                  name="retornoCapital"
-                  fullWidth
-                  value={cotizacion.retornoCapital}
-                  onValueChange={(values) =>
-                    setCotizacion(cot => ({
-                      ...cot,
-                      retornoCapital: values.value
-                    }))
-                  }
-                  variant="outlined"
-                  thousandSeparator="."
-                  decimalSeparator=","
-                  prefix="$ "
-                />
-              </Grid>
-              <Grid item xs={12}>
+                <Grid item xs={12}>
                 <TextField
                   label="Notas adicionales / Observaciones"
                   name="notas"
@@ -829,7 +809,7 @@ export default function App() {
                   </tr>
                   <tr>
                     <td style={{ fontWeight: 700, padding: 6 }}>
-                      ACUMULACIÓN DE CAPITAL CUANDO TU CUMPAS{" "}
+                      ACUMULACIÓN DE CAPITAL A LOS{" "}
                       {datosAdicionales.aniosAcumulacion
                         ? datosAdicionales.aniosAcumulacion
                         : "___"}{" "}
