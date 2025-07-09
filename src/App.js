@@ -2,19 +2,12 @@ import React, { useState } from "react";
 import { Box, Typography, Button, Grid, Divider, TextField, MenuItem } from "@mui/material";
 import { NumericFormat } from "react-number-format";
 import metlifeLogo from "./metlife-logo.png";
-import asesoraFoto from "./asesora.jpg";
 import CoberturasDinamicas from "./components/CoberturasDinamicas";
 import CoberturasFijas from "./components/CoberturasFijas";
 import PdfPortada from "./components/PdfPortada";
+import consultoras from "./data/consultoras";
 import html2pdf from "html2pdf.js";
-import "./App.css"; // Para los estilos Excel y .no-break
-
-const datosAsesora = {
-  nombre: "Juliana Arango",
-  cargo: "Asesora",
-  correo: "katherine.j.arango@metlife.com.co",
-  celular: "+57 300 441 9025"
-};
+import "./App.css";
 
 const opcionesPoliza = {
   VIDA: [
@@ -24,14 +17,19 @@ const opcionesPoliza = {
     "Vida 80",
     "Vida 99"
   ],
-  ECOSISTEMA: [
+  PLAN_PROTECCION: [
     "Puf pesos A",
     "Puf pesos B",
     "Puf dólares",
-    "Dotal",
+    "Dotal 15 pagos",
+    "Dotal 20 pagos",
     "Pensión",
     "Ap",
-    "Temporal"
+    "Ecosistema",
+    "Temporal 50 años",
+    "Temporal 60 años",
+    "Temporal 70 años",
+    "Temporal 80 años"
   ]
 };
 
@@ -66,6 +64,11 @@ function formatCurrency(value) {
 }
 
 export default function App() {
+  // Estado para consultora seleccionada
+  const [codigoConsultora, setCodigoConsultora] = useState("");
+  const [consultora, setConsultora] = useState(null);
+  const [errorCodigo, setErrorCodigo] = useState("");
+
   const [cliente, setCliente] = useState({
     nombre: "",
     correo: "",
@@ -92,6 +95,19 @@ export default function App() {
     valorAcumulado: ""
   });
   const [generandoPDF, setGenerandoPDF] = useState(false);
+
+  // Función para ingresar código de consultora
+  const handleCodigoSubmit = (e) => {
+    e.preventDefault();
+    const encontrada = consultoras.find(c => c.codigo === codigoConsultora.trim());
+    if (encontrada) {
+      setConsultora(encontrada);
+      setErrorCodigo("");
+    } else {
+      setConsultora(null);
+      setErrorCodigo("Código incorrecto. Intenta de nuevo.");
+    }
+  };
 
   const handleClienteChange = (e) => setCliente({ ...cliente, [e.target.name]: e.target.value });
   const handleCotizacionChange = (e) => setCotizacion({ ...cotizacion, [e.target.name]: e.target.value });
@@ -135,7 +151,7 @@ export default function App() {
   const handleEnviarCorreo = () => {
     const subject = encodeURIComponent("Cotización de seguro MetLife");
     const body = encodeURIComponent(
-      `Hola ${cliente.nombre},\n\nAdjunto encontrarás tu cotización de seguro.\n\nSaludos,\n${datosAsesora.nombre}`
+      `Hola ${cliente.nombre},\n\nAdjunto encontrarás tu cotización de seguro.\n\nSaludos,\n${consultora?.nombre || "Asesora"}`
     );
     window.open(`mailto:${cliente.correo}?subject=${subject}&body=${body}`);
   };
@@ -167,6 +183,58 @@ export default function App() {
     ...coberturasLibres
   ];
 
+  // Si aún no se selecciona consultora, muestra el formulario para ingresar código
+  if (!consultora) {
+    return (
+      <Box
+        sx={{
+          minHeight: "100vh",
+          background: "radial-gradient(circle at 50% 20%, #e7f0fa 60%, #e0e7ef 100%)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        <Box
+          sx={{
+            background: "#fff",
+            borderRadius: 3,
+            boxShadow: "0 2px 24px #b7e4fc33",
+            p: 4,
+            minWidth: 320
+          }}
+        >
+          <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: "#1976d2" }}>
+            Ingresa el código de consultora
+          </Typography>
+          <form onSubmit={handleCodigoSubmit}>
+            <TextField
+              label="Código"
+              value={codigoConsultora}
+              onChange={e => setCodigoConsultora(e.target.value)}
+              fullWidth
+              variant="outlined"
+              autoFocus
+              required
+            />
+            {errorCodigo && (
+              <Typography sx={{ color: "red", mt: 1 }}>{errorCodigo}</Typography>
+            )}
+            <Button
+              variant="contained"
+              color="primary"
+              type="submit"
+              sx={{ mt: 2, width: "100%" }}
+            >
+              Acceder
+            </Button>
+          </form>
+        </Box>
+      </Box>
+    );
+  }
+
   return (
     <Box
       sx={{
@@ -174,7 +242,7 @@ export default function App() {
         background: "radial-gradient(circle at 50% 20%, #e7f0fa 60%, #e0e7ef 100%)"
       }}
     >
-      {/* ENCABEZADO Y ASESORA */}
+      {/* ENCABEZADO Y CONSULTORA */}
       <Box
         sx={{
           display: "flex",
@@ -199,8 +267,8 @@ export default function App() {
         }}
       >
         <img
-          src={asesoraFoto}
-          alt={datosAsesora.nombre}
+          src={consultora.foto}
+          alt={consultora.nombre}
           style={{
             width: 120,
             height: 120,
@@ -211,17 +279,24 @@ export default function App() {
           }}
         />
         <Typography variant="h5" sx={{ fontWeight: 700, mt: 2 }}>
-          {datosAsesora.nombre}
+          {consultora.nombre}
         </Typography>
         <Typography sx={{ color: "#757575", fontSize: 20, mb: 1 }}>
-          {datosAsesora.cargo}
+          {consultora.cargo}
         </Typography>
         <Typography sx={{ fontSize: 16, color: "#1976d2" }}>
-          {datosAsesora.correo}
+          {consultora.email}
         </Typography>
         <Typography sx={{ fontSize: 16, color: "#1976d2" }}>
-          {datosAsesora.celular}
+          {consultora.telefono}
         </Typography>
+        <Button
+          variant="text"
+          sx={{ mt: 1, color: "#888" }}
+          onClick={() => setConsultora(null)}
+        >
+          Cambiar consultora
+        </Button>
       </Box>
 
       {!showResumen && (
@@ -370,7 +445,7 @@ export default function App() {
                 >
                   <MenuItem value="">Selecciona una categoría</MenuItem>
                   <MenuItem value="VIDA">VIDA</MenuItem>
-                  <MenuItem value="ECOSISTEMA">ECOSISTEMA</MenuItem>
+                  <MenuItem value="PLAN_PROTECCION">PLAN_PROTECCION</MenuItem>
                 </TextField>
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -627,10 +702,9 @@ export default function App() {
       {showResumen && (
         <div id="pdf-content" style={{ margin: 0, padding: 0 }}>
           {/* PORTADA Y SALTO DE PÁGINA */}
-           <div className="only-pdf"> </div>
-          <PdfPortada />
+          <div className="only-pdf"> </div>
+          <PdfPortada consultora={consultora} />
           <div style={{ pageBreakAfter: "" }} />
-         
 
           {/* COTIZACIÓN */}
           <Box
@@ -659,12 +733,12 @@ export default function App() {
                   style={{ height: 38, marginBottom: 12 }}
                 />
                 <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                  Cotización de Seguro de Vida / Ecosistema
+                  Cotización de Seguro de Vida / Plan Proteccion
                 </Typography>
               </Box>
               <img
-                src={asesoraFoto}
-                alt={datosAsesora.nombre}
+                src={consultora.foto}
+                alt={consultora.nombre}
                 style={{
                   width: 76,
                   height: 76,
@@ -895,20 +969,20 @@ export default function App() {
 
             <Divider sx={{ mb: 2 }} />
             <Box className="no-break" sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-  <img
-    src={asesoraFoto}
-    alt={datosAsesora.nombre}
-    style={{ width: 48, height: 48, borderRadius: "50%" }}
-  />
-            <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                {datosAsesora.nombre}
-              </Typography>
-              <Typography variant="body2">{datosAsesora.cargo}</Typography>
-              <Typography variant="body2">{datosAsesora.correo}</Typography>
-              <Typography variant="body2">{datosAsesora.celular}</Typography>
+              <img
+                src={consultora.foto}
+                alt={consultora.nombre}
+                style={{ width: 48, height: 48, borderRadius: "50%" }}
+              />
+              <Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                  {consultora.nombre}
+                </Typography>
+                <Typography variant="body2">{consultora.cargo}</Typography>
+                <Typography variant="body2">{consultora.email}</Typography>
+                <Typography variant="body2">{consultora.telefono}</Typography>
+              </Box>
             </Box>
-          </Box>
             {!generandoPDF && (
               <Box sx={{ display: "flex", gap: 2, mt: 5, flexWrap: "wrap" }}>
                 <Button

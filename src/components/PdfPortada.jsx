@@ -1,20 +1,21 @@
 import React from "react";
-import { Box, Typography, Grid } from "@mui/material";
+import { Box, Typography, Grid, Avatar } from "@mui/material";
 import PublicIcon from "@mui/icons-material/Public";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import ShieldIcon from "@mui/icons-material/Shield";
 
-export default function PdfPortada() {
+// Recibe la consultora como prop
+export default function PdfPortada({ consultora }) {
   return (
     <>
       <Box
         sx={{
           width: "794px",
-          height: "950px", // ¡REDUCIDO! Así cabe el salto y no se generan páginas vacías
+          height: "1122px",
           background: "#fff",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "center",
+          justifyContent: "flex-start",
           alignItems: "center",
           p: 0,
           m: 0,
@@ -23,7 +24,35 @@ export default function PdfPortada() {
           position: "relative"
         }}
       >
-        {/* ...El mismo contenido de portada... */}
+        {/* Info de la consultora */}
+        {consultora && (
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              mt: 4,
+              mb: 2,
+              width: "100%",
+            }}
+          >
+            <Avatar
+              src={consultora.foto}
+              alt={consultora.nombre}
+              sx={{ width: 90, height: 90, mb: 1, border: "2px solid #1976d2" }}
+            />
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "#1976d2" }}>
+              {consultora.nombre}
+            </Typography>
+            <Typography sx={{ color: "#444" }}>
+              Email: {consultora.email}
+            </Typography>
+            <Typography sx={{ color: "#444", mb: 1 }}>
+              Teléfono: {consultora.telefono}
+            </Typography>
+          </Box>
+        )}
+
         <Typography
           variant="h5"
           align="center"
@@ -131,6 +160,7 @@ export default function PdfPortada() {
         width: "100%",
         height: "1px",
         pageBreakAfter: "always",
+        breakAfter: ""
       }} />
     </>
   );
