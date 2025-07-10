@@ -102,13 +102,10 @@ export default function App() {
   const primaInversion = Number(datosAdicionales.primaInversion) || 0;
   const total = primaMensual + primaInversion;
 
-  // Solo actualiza si el valor cambia, para evitar loops infinitos
-  if (datosAdicionales.totalInversion !== total) {
-    setDatosAdicionales(prev => ({
-      ...prev,
-      totalInversion: total
-    }));
-  }
+  setDatosAdicionales(prev => ({
+    ...prev,
+    totalInversion: total
+  }));
 }, [cotizacion.primaMensual, datosAdicionales.primaInversion]);
 
 
