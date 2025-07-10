@@ -25,7 +25,7 @@ const consultoras = [
 
  {
     codigo: "04",
-    nombre: "Venus Tobon",
+    nombre: "Venus Tobón",
     foto: "/consultoras/04.jpg",
     email: "venus.tobon@metlife.com.co",
     telefono: "3014293162",
