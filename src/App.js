@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Typography, Button, Grid, Divider, TextField, MenuItem } from "@mui/material";
 import { NumericFormat } from "react-number-format";
 import metlifeLogo from "./metlife-logo.png";
@@ -95,6 +95,23 @@ export default function App() {
     valorAcumulado: ""
   });
   const [generandoPDF, setGenerandoPDF] = useState(false);
+
+  useEffect(() => {
+  // Convierte a número (los valores pueden llegar como string)
+  const primaMensual = Number(cotizacion.primaMensual) || 0;
+  const primaInversion = Number(datosAdicionales.primaInversion) || 0;
+  const total = primaMensual + primaInversion;
+
+  // Solo actualiza si el valor cambia, para evitar loops infinitos
+  if (datosAdicionales.totalInversion !== total) {
+    setDatosAdicionales(prev => ({
+      ...prev,
+      totalInversion: total
+    }));
+  }
+}, [cotizacion.primaMensual, datosAdicionales.primaInversion]);
+
+
 
   // Función para ingresar código de consultora
   const handleCodigoSubmit = (e) => {
@@ -616,14 +633,13 @@ export default function App() {
                   customInput={TextField}
                   label="Total Inversión Mensual"
                   value={datosAdicionales.totalInversion}
-                  onValueChange={(values) =>
-                    handleDatosAdicionalesChange("totalInversion", values.value)
-                  }
                   thousandSeparator="."
                   decimalSeparator=","
                   prefix="$ "
                   fullWidth
-                />
+                  disabled // <--- Solo lectura
+                    />
+              
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -839,7 +855,7 @@ export default function App() {
                 <tbody>
                   <tr>
                     <td style={{ fontWeight: 700, padding: 6 }}>
-                      PRIMA DE INVERSIÓN MENSUAL
+                      PRIMA MENSUAL DE FONDO DE INVERSIÓN 
                     </td>
                     <td
                       style={{
@@ -853,7 +869,7 @@ export default function App() {
                   </tr>
                   <tr>
                     <td style={{ fontWeight: 700, padding: 6 }}>
-                      TOTAL INVERSIÓN MENSUAL
+                      PRIMA MENSUAL DE PROTECCIÓN
                     </td>
                     <td
                       style={{
@@ -862,7 +878,7 @@ export default function App() {
                         padding: 6
                       }}
                     >
-                      {formatCurrency(datosAdicionales.totalInversion)}
+                      {formatCurrency(cotizacion.primaMensual)}
                     </td>
                   </tr>
                   <tr>
@@ -931,7 +947,7 @@ export default function App() {
                   variant="subtitle2"
                   sx={{ color: "#888", fontWeight: 600 }}
                 >
-                  Prima mensual:
+                  Total inversión mensual:
                 </Typography>
                 <Typography
                   variant="body1"
@@ -941,7 +957,7 @@ export default function App() {
                     color: "#1abc74"
                   }}
                 >
-                  {formatCurrency(cotizacion.primaMensual)}
+                  {formatCurrency(datosAdicionales.totalInversion)}
                 </Typography>
               </Box>
             </Box>
