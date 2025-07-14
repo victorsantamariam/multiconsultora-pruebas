@@ -40,6 +40,13 @@ const consultoras = [
     telefono: "3016312188",
   },
 
+  {
+    codigo: "06",
+    nombre: "Viany Camacho Vargas",
+    foto: "/consultoras/06.jpg",
+    email: "viany.l.camacho@metlife.com.co ",
+    telefono: "3223788609",
+  },
 
 
 ];
