@@ -9,6 +9,7 @@ import consultoras from "./data/consultoras";
 import html2pdf from "html2pdf.js";
 import "./App.css";
 
+
 const opcionesPoliza = {
   VIDA: [
     "Vida 50",
@@ -422,68 +423,136 @@ export default function App() {
           </Box>
 
           {/* SELECCIÓN DE PÓLIZA */}
-          <Box
-            sx={{
-              maxWidth: 750,
-              margin: "32px auto 0 auto",
-              background: "#fff",
-              borderRadius: 3,
-              boxShadow: "0 2px 24px #b7e4fc33",
-              p: 4
-            }}
-          >
-            <Typography
-              variant="h6"
-              sx={{
-                color: "#1abc74",
-                mb: 2,
-                fontWeight: 700,
-                letterSpacing: 1
-              }}
-            >
-              Selecciona el tipo de póliza
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  select
-                  label="Categoría"
-                  value={categoriaPoliza}
-                  onChange={e => {
-                    setCategoriaPoliza(e.target.value);
-                    setTipoPoliza("");
-                  }}
-                  fullWidth
-                  variant="outlined"
-                  required
-                >
-                  <MenuItem value="">Selecciona una categoría</MenuItem>
-                  <MenuItem value="VIDA">VIDA</MenuItem>
-                  <MenuItem value="PLAN_PROTECCION">PLAN_PROTECCION</MenuItem>
-                </TextField>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  select
-                  label="Tipo de póliza"
-                  value={tipoPoliza}
-                  onChange={e => setTipoPoliza(e.target.value)}
-                  fullWidth
-                  variant="outlined"
-                  required
-                  disabled={!categoriaPoliza}
-                >
-                  <MenuItem value="">Selecciona un tipo</MenuItem>
-                  {categoriaPoliza &&
-                    opcionesPoliza[categoriaPoliza].map(opcion => (
-                      <MenuItem key={opcion} value={opcion}>
-                        {opcion}
-                      </MenuItem>
-                    ))}
-                </TextField>
-              </Grid>
-            </Grid>
-          </Box>
+<Box
+  sx={{
+    maxWidth: 750,
+    margin: "32px auto 0 auto",
+    background: "#fff",
+    borderRadius: 3,
+    boxShadow: "0 2px 24px #b7e4fc33",
+    p: 4
+  }}
+>
+  <Typography
+    variant="h6"
+    sx={{
+      color: "#1abc74",
+      mb: 2,
+      fontWeight: 700,
+      letterSpacing: 1
+    }}
+  >
+    Selecciona el tipo de póliza
+  </Typography>
+  <Grid container spacing={2}>
+    <Grid item xs={12} sm={6}>
+      <TextField
+        select
+        label="Categoría"
+        value={categoriaPoliza}
+        onChange={e => {
+          setCategoriaPoliza(e.target.value);
+          setTipoPoliza("");
+        }}
+        fullWidth
+        variant="outlined"
+        required
+      >
+        <MenuItem value="">Selecciona una categoría</MenuItem>
+        <MenuItem value="VIDA">VIDA</MenuItem>
+        <MenuItem value="PLAN_PROTECCION">PLAN_PROTECCION</MenuItem>
+      </TextField>
+    </Grid>
+    <Grid item xs={12} sm={6}>
+      <TextField
+        select
+        label="Tipo de póliza"
+        value={tipoPoliza}
+        onChange={e => setTipoPoliza(e.target.value)}
+        fullWidth
+        variant="outlined"
+        required
+        disabled={!categoriaPoliza}
+      >
+        <MenuItem value="">Selecciona un tipo</MenuItem>
+        {categoriaPoliza &&
+          opcionesPoliza[categoriaPoliza].map(opcion => (
+            <MenuItem key={opcion} value={opcion}>
+              {opcion}
+            </MenuItem>
+          ))}
+      </TextField>
+    </Grid>
+  </Grid>
+
+                {/* Bloque de beneficios Ecosistema, visible al seleccionar Ecosistema */}
+                {categoriaPoliza === "PLAN_PROTECCION" && tipoPoliza === "Ecosistema" && (
+                  <Box
+                    sx={{
+                      background: "#e3f4fd",
+                      border: "2px solid #1976d2",
+                      borderRadius: 2,
+                      p: { xs: 2, md: 3 },
+                      mt: 4,
+                      mb: 3,
+                      boxShadow: "0 2px 12px #1976d2aa",
+                      maxWidth: 700,
+                      margin: "0 auto"
+                    }}
+                  >
+                    <Typography variant="h6" sx={{ color: "#1976d2", fontWeight: 700, mb: 1 }}>
+                      Esta póliza incluye acceso a Ecosistema Bienestar:
+                    </Typography>
+                    <Typography variant="body1" sx={{ mb: 2 }}>
+                      Accede a nuestra plataforma digital con servicios de:
+                      <b> SALUD A UN CLICK, BIENESTAR INTEGRAL y SALUD MENTAL</b>.
+                    </Typography>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} md={4}>
+                        <Typography variant="subtitle1" sx={{ color: "#1abc74", fontWeight: 700 }}>
+                          Salud a un click
+                        </Typography>
+                        <ul style={{ margin: 0, paddingLeft: 18 }}>
+                          <li>Orientación veterinaria (video consulta)</li>
+                          <li>Internista (telemedicina)</li>
+                          <li>Enfermería (video consulta)</li>
+                          <li>Wikidoc (Herramienta de consulta)</li>
+                          <li>Exámenes preventivos (Herramienta)</li>
+                          <li>Nutrición (video consulta)</li>
+                          <li>Medicina General (telemedicina)</li>
+                          <li>Dermatólogo (telemedicina)</li>
+                          <li>Ginecólogo (telemedicina)</li>
+                          <li>Farmacia Digital (Herramienta)</li>
+                          <li>Médico domiciliario (Servicio físico)</li>
+                          <li>Exámenes de laboratorio (Herramienta)</li>
+                          <li>Traslado Médico (Servicio físico)</li>
+                        </ul>
+                      </Grid>
+                      <Grid item xs={12} md={4}>
+                        <Typography variant="subtitle1" sx={{ color: "#1abc74", fontWeight: 700 }}>
+                          Bienestar integral
+                        </Typography>
+                        <ul style={{ margin: 0, paddingLeft: 18 }}>
+                          <li>Yoga (Clase por video)</li>
+                          <li>Pilates (Clase por video)</li>
+                          <li>Entrenador Personal (Clase por video)</li>
+                          <li>Mindfulness (video consulta)</li>
+                        </ul>
+                      </Grid>
+                      <Grid item xs={12} md={4}>
+                        <Typography variant="subtitle1" sx={{ color: "#1abc74", fontWeight: 700 }}>
+                          Salud mental
+                        </Typography>
+                        <ul style={{ margin: 0, paddingLeft: 18 }}>
+                          <li>Psicólogo (telemedicina)</li>
+                        </ul>
+                      </Grid>
+                    </Grid>
+                  </Box>
+                )}
+              </Box>
+
+          
 
           {/* BLOQUE DE COTIZACIÓN */}
           <Box
@@ -830,7 +899,74 @@ export default function App() {
                 </tbody>
               </table>
             </div>
-            <Divider sx={{ mb: 3 }} />
+
+             {/* === BLOQUE DE BENEFICIOS ECOSISTEMA (solo si aplica) === */}
+            {categoriaPoliza === "PLAN_PROTECCION" && tipoPoliza === "Ecosistema" && (
+              <Box
+                sx={{
+                  background: "#e3f4fd",
+                  border: "2px solid #1976d2",
+                  borderRadius: 2,
+                  p: { xs: 2, md: 3 },
+                  my: 3,
+                  boxShadow: "0 2px 12px #1976d2aa",
+                  maxWidth: 700,
+                  margin: "0 auto"
+                }}
+              >
+                <Typography variant="h6" sx={{ color: "#1976d2", fontWeight: 700, mb: 1 }}>
+                  Esta póliza incluye acceso a Ecosistema Bienestar:
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 2 }}>
+                  Accede a nuestra plataforma digital con servicios de:
+                  <b> SALUD A UN CLICK, BIENESTAR INTEGRAL y SALUD MENTAL</b>.
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={4}>
+                    <Typography variant="subtitle1" sx={{ color: "#1abc74", fontWeight: 700 }}>
+                      Salud a un click
+                    </Typography>
+                    <ul style={{ margin: 0, paddingLeft: 18 }}>
+                      <li>Orientación veterinaria (video consulta)</li>
+                      <li>Internista (telemedicina)</li>
+                      <li>Enfermería (video consulta)</li>
+                      <li>Wikidoc (Herramienta de consulta)</li>
+                      <li>Exámenes preventivos (Herramienta)</li>
+                      <li>Nutrición (video consulta)</li>
+                      <li>Medicina General (telemedicina)</li>
+                      <li>Dermatólogo (telemedicina)</li>
+                      <li>Ginecólogo (telemedicina)</li>
+                      <li>Farmacia Digital (Herramienta)</li>
+                      <li>Médico domiciliario (Servicio físico)</li>
+                      <li>Exámenes de laboratorio (Herramienta)</li>
+                      <li>Traslado Médico (Servicio físico)</li>
+                    </ul>
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <Typography variant="subtitle1" sx={{ color: "#1abc74", fontWeight: 700 }}>
+                      Bienestar integral
+                    </Typography>
+                    <ul style={{ margin: 0, paddingLeft: 18 }}>
+                      <li>Yoga (Clase por video)</li>
+                      <li>Pilates (Clase por video)</li>
+                      <li>Entrenador Personal (Clase por video)</li>
+                      <li>Mindfulness (video consulta)</li>
+                    </ul>
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <Typography variant="subtitle1" sx={{ color: "#1abc74", fontWeight: 700 }}>
+                      Salud mental
+                    </Typography>
+                    <ul style={{ margin: 0, paddingLeft: 18 }}>
+                      <li>Psicólogo (telemedicina)</li>
+                    </ul>
+                  </Grid>
+                </Grid>
+              </Box>
+            )}
+            {/* === FIN BLOQUE DE BENEFICIOS ECOSISTEMA === */}
+
+          <Divider sx={{ mb: 3 }} />
 
             {/* BLOQUE VERDE - NO BREAK */}
             <Box
