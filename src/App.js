@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Box, Typography, Button, Grid, Divider, TextField, MenuItem } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Button,
+  Grid,
+  Divider,
+  TextField,
+  MenuItem,
+} from "@mui/material";
 import { NumericFormat } from "react-number-format";
 import metlifeLogo from "./metlife-logo.png";
 import CoberturasDinamicas from "./components/CoberturasDinamicas";
@@ -7,17 +15,12 @@ import CoberturasFijas from "./components/CoberturasFijas";
 import PdfPortada from "./components/PdfPortada";
 import consultoras from "./data/consultoras";
 import html2pdf from "html2pdf.js";
+import Asistencias from "./components/Asistencias";
 import "./App.css";
 
-
+// Opciones para el tipo de póliza
 const opcionesPoliza = {
-  VIDA: [
-    "Vida 50",
-    "Vida 60",
-    "Vida 70",
-    "Vida 80",
-    "Vida 99"
-  ],
+  VIDA: ["Vida 50", "Vida 60", "Vida 70", "Vida 80", "Vida 99"],
   PLAN_PROTECCION: [
     "Puf pesos A",
     "Puf pesos B",
@@ -30,10 +33,11 @@ const opcionesPoliza = {
     "Temporal 50 años",
     "Temporal 60 años",
     "Temporal 70 años",
-    "Temporal 80 años"
-  ]
+    "Temporal 80 años",
+  ],
 };
 
+// Opciones para coberturas fijas
 const opcionesCoberturasFijas = [
   "Desmembración por accidente",
   "Muerte por cualquier causa",
@@ -45,15 +49,10 @@ const opcionesCoberturasFijas = [
   "Renta diaria por hospitalización por accidente o enfermedad",
   "Enfermedades graves",
   "cancer",
-  "Asistencia en viaje internacional",
-  "Auxilio gastos funerarios",
-  "asistencia médica",
-  "conductor  elegido",
-  "emergencia Odontologica",
   "Muerte por accidente",
-  "asistencia en nutrición"
 ];
 
+// Formatea números a moneda
 function formatCurrency(value) {
   if (!value) return "$ 0";
   return (
@@ -65,10 +64,11 @@ function formatCurrency(value) {
 }
 
 export default function App() {
-  // Estado para consultora seleccionada
+  // Estados principales
   const [codigoConsultora, setCodigoConsultora] = useState("");
   const [consultora, setConsultora] = useState(null);
   const [errorCodigo, setErrorCodigo] = useState("");
+  const [asistenciasSeleccionadas, setAsistenciasSeleccionadas] = useState([]);
 
   const [cliente, setCliente] = useState({
     nombre: "",
@@ -76,14 +76,14 @@ export default function App() {
     celular: "",
     edad: "",
     genero: "",
-    ciudad: ""
+    ciudad: "",
   });
   const [categoriaPoliza, setCategoriaPoliza] = useState("");
   const [tipoPoliza, setTipoPoliza] = useState("");
   const [cotizacion, setCotizacion] = useState({
     sumaAsegurada: "",
     primaMensual: "",
-    notas: ""
+    notas: "",
   });
   const [coberturasFijas, setCoberturasFijas] = useState([]);
   const [coberturasLibres, setCoberturasLibres] = useState([]);
@@ -91,30 +91,29 @@ export default function App() {
   const [datosAdicionales, setDatosAdicionales] = useState({
     primaInversion: "",
     totalInversion: "",
-    asistenciaViaje: "INCLUIDO",
     aniosAcumulacion: "",
-    valorAcumulado: ""
+    valorAcumulado: "",
   });
   const [generandoPDF, setGenerandoPDF] = useState(false);
 
+  // Actualiza el total de inversión cuando cambian valores relevantes
   useEffect(() => {
-  // Convierte a número (los valores pueden llegar como string)
-  const primaMensual = Number(cotizacion.primaMensual) || 0;
-  const primaInversion = Number(datosAdicionales.primaInversion) || 0;
-  const total = primaMensual + primaInversion;
+    const primaMensual = Number(cotizacion.primaMensual) || 0;
+    const primaInversion = Number(datosAdicionales.primaInversion) || 0;
+    const total = primaMensual + primaInversion;
 
-  setDatosAdicionales(prev => ({
-    ...prev,
-    totalInversion: total
-  }));
-}, [cotizacion.primaMensual, datosAdicionales.primaInversion]);
+    setDatosAdicionales((prev) => ({
+      ...prev,
+      totalInversion: total,
+    }));
+  }, [cotizacion.primaMensual, datosAdicionales.primaInversion]);
 
-
-
-  // Función para ingresar código de consultora
+  // Manejo de código de consultora
   const handleCodigoSubmit = (e) => {
     e.preventDefault();
-    const encontrada = consultoras.find(c => c.codigo === codigoConsultora.trim());
+    const encontrada = consultoras.find(
+      (c) => c.codigo === codigoConsultora.trim()
+    );
     if (encontrada) {
       setConsultora(encontrada);
       setErrorCodigo("");
@@ -124,22 +123,27 @@ export default function App() {
     }
   };
 
-  const handleClienteChange = (e) => setCliente({ ...cliente, [e.target.name]: e.target.value });
-  const handleCotizacionChange = (e) => setCotizacion({ ...cotizacion, [e.target.name]: e.target.value });
-  const handleDatosAdicionalesChange = (name, value) => setDatosAdicionales(prev => ({ ...prev, [name]: value }));
+  // Handlers varios
+  const handleClienteChange = (e) =>
+    setCliente({ ...cliente, [e.target.name]: e.target.value });
+  const handleCotizacionChange = (e) =>
+    setCotizacion({ ...cotizacion, [e.target.name]: e.target.value });
+  const handleDatosAdicionalesChange = (name, value) =>
+    setDatosAdicionales((prev) => ({ ...prev, [name]: value }));
 
   const handleGenerarResumen = () => setShowResumen(true);
 
+  // Funciones para PDF y compartir
   const handleDescargarPDF = async () => {
     setGenerandoPDF(true);
     setTimeout(() => {
       const element = document.getElementById("pdf-content");
       html2pdf()
         .set({
-          margin: 0, // ¡Importantísimo! Así NO hay margen externo
+          margin: 0,
           filename: `Cotizacion_${cliente.nombre || "cliente"}.pdf`,
           html2canvas: { scale: 2 },
-          jsPDF: { unit: "px", format: [794, 1122], orientation: "portrait" }
+          jsPDF: { unit: "px", format: [794, 1122], orientation: "portrait" },
         })
         .from(element)
         .save()
@@ -175,30 +179,32 @@ export default function App() {
     const mensaje = encodeURIComponent(
       `Hola ${cliente.nombre}, te comparto la cotización de seguro MetLife.`
     );
-    const celular = cliente.celular.replace(/\D/g, "") || "573004419025";
-    window.open(`https://wa.me/${celular}?text=${mensaje}`);
-  };
+    const celularLimpio = cliente.celular.replace(/\D/g, "");
+  if (celularLimpio) {
+    window.open(`https://wa.me/${celularLimpio}?text=${mensaje}`);
+  } else {
+    alert("El cliente no tiene número de celular registrado.");
+  }
+};
 
+  // Valida que todos los datos necesarios estén completos
   const datosCompletos =
     cliente.nombre &&
     tipoPoliza &&
     cotizacion.primaMensual &&
-    (
-      coberturasFijas.some(c => c.valor) ||
-      coberturasLibres.length > 0
-    ) &&
+    (coberturasFijas.some((c) => c.valor) || coberturasLibres.length > 0) &&
     datosAdicionales.primaInversion &&
     datosAdicionales.totalInversion &&
-    datosAdicionales.asistenciaViaje &&
     datosAdicionales.aniosAcumulacion &&
     datosAdicionales.valorAcumulado;
 
+  // Coberturas seleccionadas (fijas y dinámicas)
   const coberturasSeleccionadas = [
-    ...coberturasFijas.filter(cob => cob.valor),
-    ...coberturasLibres
+    ...coberturasFijas.filter((cob) => cob.valor),
+    ...coberturasLibres,
   ];
 
-  // Si aún no se selecciona consultora, muestra el formulario para ingresar código
+  // FORMULARIO DE CONSULTORA
   if (!consultora) {
     return (
       <Box
@@ -208,7 +214,7 @@ export default function App() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center"
+          justifyContent: "center",
         }}
       >
         <Box
@@ -217,24 +223,29 @@ export default function App() {
             borderRadius: 3,
             boxShadow: "0 2px 24px #b7e4fc33",
             p: 4,
-            minWidth: 320
+            minWidth: 320,
           }}
         >
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: "#1976d2" }}>
+          <Typography
+            variant="h5"
+            sx={{ fontWeight: 700, mb: 2, color: "#1976d2" }}
+          >
             Ingresa el código de consultora
           </Typography>
           <form onSubmit={handleCodigoSubmit}>
             <TextField
               label="Código"
               value={codigoConsultora}
-              onChange={e => setCodigoConsultora(e.target.value)}
+              onChange={(e) => setCodigoConsultora(e.target.value)}
               fullWidth
               variant="outlined"
               autoFocus
               required
             />
             {errorCodigo && (
-              <Typography sx={{ color: "red", mt: 1 }}>{errorCodigo}</Typography>
+              <Typography sx={{ color: "red", mt: 1 }}>
+                {errorCodigo}
+              </Typography>
             )}
             <Button
               variant="contained"
@@ -250,11 +261,12 @@ export default function App() {
     );
   }
 
+  // =========== RENDER PRINCIPAL ==============
   return (
     <Box
       sx={{
         minHeight: "100vh",
-        background: "radial-gradient(circle at 50% 20%, #e7f0fa 60%, #e0e7ef 100%)"
+        background: "radial-gradient(circle at 50% 20%, #e7f0fa 60%, #e0e7ef 100%)",
       }}
     >
       {/* ENCABEZADO Y CONSULTORA */}
@@ -263,7 +275,7 @@ export default function App() {
           display: "flex",
           alignItems: "center",
           padding: "24px 32px 0 32px",
-          justifyContent: "space-between"
+          justifyContent: "space-between",
         }}
       >
         <img
@@ -278,7 +290,7 @@ export default function App() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          mt: 3
+          mt: 3,
         }}
       >
         <img
@@ -290,7 +302,7 @@ export default function App() {
             borderRadius: "50%",
             border: "5px solid #17d4b6",
             boxShadow: "0 2px 16px #1abc7480",
-            objectFit: "cover"
+            objectFit: "cover",
           }}
         />
         <Typography variant="h5" sx={{ fontWeight: 700, mt: 2 }}>
@@ -314,9 +326,10 @@ export default function App() {
         </Button>
       </Box>
 
+      {/* ============== FORMULARIO PRINCIPAL ================== */}
       {!showResumen && (
         <>
-          {/* FORMULARIO DE DATOS DEL CLIENTE */}
+          {/* Datos del cliente */}
           <Box
             sx={{
               maxWidth: 750,
@@ -325,7 +338,7 @@ export default function App() {
               borderRadius: 3,
               boxShadow: "0 2px 24px #b7e4fc33",
               p: 4,
-              mt: 3
+              mt: 3,
             }}
           >
             <Typography
@@ -334,7 +347,7 @@ export default function App() {
                 color: "#1abc74",
                 mb: 2,
                 fontWeight: 700,
-                letterSpacing: 1
+                letterSpacing: 1,
               }}
             >
               Datos del cliente
@@ -422,139 +435,7 @@ export default function App() {
             </Grid>
           </Box>
 
-          {/* SELECCIÓN DE PÓLIZA */}
-<Box
-  sx={{
-    maxWidth: 750,
-    margin: "32px auto 0 auto",
-    background: "#fff",
-    borderRadius: 3,
-    boxShadow: "0 2px 24px #b7e4fc33",
-    p: 4
-  }}
->
-  <Typography
-    variant="h6"
-    sx={{
-      color: "#1abc74",
-      mb: 2,
-      fontWeight: 700,
-      letterSpacing: 1
-    }}
-  >
-    Selecciona el tipo de póliza
-  </Typography>
-  <Grid container spacing={2} sx={{ mb: 2 }}>
-    <Grid item xs={12} sm={6}>
-      <TextField
-        select
-        label="Categoría"
-        value={categoriaPoliza}
-        onChange={e => {
-          setCategoriaPoliza(e.target.value);
-          setTipoPoliza("");
-        }}
-        fullWidth
-        variant="outlined"
-        required
-      >
-        <MenuItem value="">Selecciona una categoría</MenuItem>
-        <MenuItem value="VIDA">VIDA</MenuItem>
-        <MenuItem value="PLAN_PROTECCION">PLAN_PROTECCION</MenuItem>
-      </TextField>
-    </Grid>
-    <Grid item xs={12} sm={6}>
-      <TextField
-        select
-        label="Tipo de póliza"
-        value={tipoPoliza}
-        onChange={e => setTipoPoliza(e.target.value)}
-        fullWidth
-        variant="outlined"
-        required
-        disabled={!categoriaPoliza}
-      >
-        <MenuItem value="">Selecciona un tipo</MenuItem>
-        {categoriaPoliza &&
-          opcionesPoliza[categoriaPoliza].map(opcion => (
-            <MenuItem key={opcion} value={opcion}>
-              {opcion}
-            </MenuItem>
-          ))}
-      </TextField>
-    </Grid>
-  </Grid>
-
-                {/* Bloque de beneficios Ecosistema, visible al seleccionar Ecosistema */}
-                {categoriaPoliza === "PLAN_PROTECCION" && tipoPoliza === "Ecosistema" && (
-                  <Box
-                    sx={{
-                      background: "#e3f4fd",
-                      border: "2px solid #1976d2",
-                      borderRadius: 2,
-                      p: { xs: 2, md: 3 },
-                      mt: 4,
-                      mb: 3,
-                      boxShadow: "0 2px 12px #1976d2aa",
-                      maxWidth: 700,
-                      margin: "0 auto"
-                    }}
-                  >
-                    <Typography variant="h6" sx={{ color: "#1976d2", fontWeight: 700, mb: 1 }}>
-                      Esta póliza incluye acceso a Ecosistema Bienestar:
-                    </Typography>
-                    <Typography variant="body1" sx={{ mb: 2 }}>
-                      Accede a nuestra plataforma digital con servicios de:
-                      <b> SALUD A UN CLICK, BIENESTAR INTEGRAL y SALUD MENTAL</b>.
-                    </Typography>
-                    <Grid container spacing={2}>
-                      <Grid item xs={12} md={4}>
-                        <Typography variant="subtitle1" sx={{ color: "#1abc74", fontWeight: 700 }}>
-                          Salud a un click
-                        </Typography>
-                        <ul style={{ margin: 0, paddingLeft: 18 }}>
-                          <li>Orientación veterinaria (video consulta)</li>
-                          <li>Internista (telemedicina)</li>
-                          <li>Enfermería (video consulta)</li>
-                          <li>Wikidoc (Herramienta de consulta)</li>
-                          <li>Exámenes preventivos (Herramienta)</li>
-                          <li>Nutrición (video consulta)</li>
-                          <li>Medicina General (telemedicina)</li>
-                          <li>Dermatólogo (telemedicina)</li>
-                          <li>Ginecólogo (telemedicina)</li>
-                          <li>Farmacia Digital (Herramienta)</li>
-                          <li>Médico domiciliario (Servicio físico)</li>
-                          <li>Exámenes de laboratorio (Herramienta)</li>
-                          <li>Traslado Médico (Servicio físico)</li>
-                        </ul>
-                      </Grid>
-                      <Grid item xs={12} md={4}>
-                        <Typography variant="subtitle1" sx={{ color: "#1abc74", fontWeight: 700 }}>
-                          Bienestar integral
-                        </Typography>
-                        <ul style={{ margin: 0, paddingLeft: 18 }}>
-                          <li>Yoga (Clase por video)</li>
-                          <li>Pilates (Clase por video)</li>
-                          <li>Entrenador Personal (Clase por video)</li>
-                          <li>Mindfulness (video consulta)</li>
-                        </ul>
-                      </Grid>
-                      <Grid item xs={12} md={4}>
-                        <Typography variant="subtitle1" sx={{ color: "#1abc74", fontWeight: 700 }}>
-                          Salud mental
-                        </Typography>
-                        <ul style={{ margin: 0, paddingLeft: 18 }}>
-                          <li>Psicólogo (telemedicina)</li>
-                        </ul>
-                      </Grid>
-                    </Grid>
-                  </Box>
-                )}
-              </Box>
-
-          
-
-          {/* BLOQUE DE COTIZACIÓN */}
+          {/* Selección de póliza */}
           <Box
             sx={{
               maxWidth: 750,
@@ -562,7 +443,7 @@ export default function App() {
               background: "#fff",
               borderRadius: 3,
               boxShadow: "0 2px 24px #b7e4fc33",
-              p: 4
+              p: 4,
             }}
           >
             <Typography
@@ -571,7 +452,152 @@ export default function App() {
                 color: "#1abc74",
                 mb: 2,
                 fontWeight: 700,
-                letterSpacing: 1
+                letterSpacing: 1,
+              }}
+            >
+              Selecciona el tipo de póliza
+            </Typography>
+            <Grid container spacing={2} sx={{ mb: 2 }}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  select
+                  label="Categoría"
+                  value={categoriaPoliza}
+                  onChange={(e) => {
+                    setCategoriaPoliza(e.target.value);
+                    setTipoPoliza("");
+                  }}
+                  fullWidth
+                  variant="outlined"
+                  required
+                >
+                  <MenuItem value="">Selecciona una categoría</MenuItem>
+                  <MenuItem value="VIDA">VIDA</MenuItem>
+                  <MenuItem value="PLAN_PROTECCION">
+                    PLAN_PROTECCION
+                  </MenuItem>
+                </TextField>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  select
+                  label="Tipo de póliza"
+                  value={tipoPoliza}
+                  onChange={(e) => setTipoPoliza(e.target.value)}
+                  fullWidth
+                  variant="outlined"
+                  required
+                  disabled={!categoriaPoliza}
+                >
+                  <MenuItem value="">Selecciona un tipo</MenuItem>
+                  {categoriaPoliza &&
+                    opcionesPoliza[categoriaPoliza].map((opcion) => (
+                      <MenuItem key={opcion} value={opcion}>
+                        {opcion}
+                      </MenuItem>
+                    ))}
+                </TextField>
+              </Grid>
+            </Grid>
+
+            {/* Beneficios Ecosistema */}
+            {categoriaPoliza === "PLAN_PROTECCION" &&
+              tipoPoliza === "Ecosistema" && (
+                <Box
+                  sx={{
+                    background: "#e3f4fd",
+                    border: "2px solid #1976d2",
+                    borderRadius: 2,
+                    p: { xs: 2, md: 3 },
+                    mt: 4,
+                    mb: 3,
+                    boxShadow: "0 2px 12px #1976d2aa",
+                    maxWidth: 700,
+                    margin: "0 auto",
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{ color: "#1976d2", fontWeight: 700, mb: 1 }}
+                  >
+                    Esta póliza incluye acceso a Ecosistema Bienestar:
+                  </Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>
+                    Accede a nuestra plataforma digital con servicios de:
+                    <b> SALUD A UN CLICK, BIENESTAR INTEGRAL y SALUD MENTAL</b>.
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={4}>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{ color: "#1abc74", fontWeight: 700 }}
+                      >
+                        Salud a un click
+                      </Typography>
+                      <ul style={{ margin: 0, paddingLeft: 18 }}>
+                        <li>Orientación veterinaria (video consulta)</li>
+                        <li>Internista (telemedicina)</li>
+                        <li>Enfermería (video consulta)</li>
+                        <li>Wikidoc (Herramienta de consulta)</li>
+                        <li>Exámenes preventivos (Herramienta)</li>
+                        <li>Nutrición (video consulta)</li>
+                        <li>Medicina General (telemedicina)</li>
+                        <li>Dermatólogo (telemedicina)</li>
+                        <li>Ginecólogo (telemedicina)</li>
+                        <li>Farmacia Digital (Herramienta)</li>
+                        <li>Médico domiciliario (Servicio físico)</li>
+                        <li>Exámenes de laboratorio (Herramienta)</li>
+                        <li>Traslado Médico (Servicio físico)</li>
+                      </ul>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{ color: "#1abc74", fontWeight: 700 }}
+                      >
+                        Bienestar integral
+                      </Typography>
+                      <ul style={{ margin: 0, paddingLeft: 18 }}>
+                        <li>Yoga (Clase por video)</li>
+                        <li>Pilates (Clase por video)</li>
+                        <li>Entrenador Personal (Clase por video)</li>
+                        <li>Mindfulness (video consulta)</li>
+                      </ul>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{ color: "#1abc74", fontWeight: 700 }}
+                      >
+                        Salud mental
+                      </Typography>
+                      <ul style={{ margin: 0, paddingLeft: 18 }}>
+                        <li>Psicólogo (telemedicina)</li>
+                      </ul>
+                    </Grid>
+                  </Grid>
+                </Box>
+              )}
+          </Box>
+
+          {/* Cotización */}
+          <Box
+            sx={{
+              maxWidth: 750,
+              margin: "32px auto 0 auto",
+              background: "#fff",
+              borderRadius: 3,
+              boxShadow: "0 2px 24px #b7e4fc33",
+              p: 4,
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                color: "#1abc74",
+                mb: 2,
+                fontWeight: 700,
+                letterSpacing: 1,
               }}
             >
               Datos de la cotización
@@ -585,9 +611,9 @@ export default function App() {
                   fullWidth
                   value={cotizacion.sumaAsegurada}
                   onValueChange={(values) =>
-                    setCotizacion(cot => ({
+                    setCotizacion((cot) => ({
                       ...cot,
-                      sumaAsegurada: values.value
+                      sumaAsegurada: values.value,
                     }))
                   }
                   variant="outlined"
@@ -605,9 +631,9 @@ export default function App() {
                   fullWidth
                   value={cotizacion.primaMensual}
                   onValueChange={(values) =>
-                    setCotizacion(cot => ({
+                    setCotizacion((cot) => ({
                       ...cot,
-                      primaMensual: values.value
+                      primaMensual: values.value,
                     }))
                   }
                   variant="outlined"
@@ -633,7 +659,7 @@ export default function App() {
             </Grid>
           </Box>
 
-          {/* BLOQUE DE COBERTURAS FIJAS Y DINÁMICAS */}
+          {/* Coberturas fijas + dinámicas */}
           <Box
             sx={{
               maxWidth: 750,
@@ -641,7 +667,7 @@ export default function App() {
               background: "#fff",
               borderRadius: 3,
               boxShadow: "0 2px 24px #b7e4fc33",
-              p: 4
+              p: 4,
             }}
           >
             <CoberturasFijas
@@ -657,7 +683,13 @@ export default function App() {
             </Box>
           </Box>
 
-          {/* BLOQUE DE DATOS ADICIONALES */}
+          {/* Asistencias */}
+          <Asistencias
+            seleccionadas={asistenciasSeleccionadas}
+            onChange={setAsistenciasSeleccionadas}
+          />
+
+          {/* Datos adicionales de inversión */}
           <Box
             sx={{
               maxWidth: 750,
@@ -665,7 +697,7 @@ export default function App() {
               background: "#fff",
               borderRadius: 3,
               boxShadow: "0 2px 24px #b7e4fc33",
-              p: 4
+              p: 4,
             }}
           >
             <Typography
@@ -674,7 +706,7 @@ export default function App() {
                 color: "#1abc74",
                 mb: 2,
                 fontWeight: 700,
-                letterSpacing: 1
+                letterSpacing: 1,
               }}
             >
               Datos adicionales de inversión
@@ -703,31 +735,19 @@ export default function App() {
                   decimalSeparator=","
                   prefix="$ "
                   fullWidth
-                  disabled // <--- Solo lectura
-                    />
-              
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  select
-                  label="Asistencia Viaje Internacional"
-                  value={datosAdicionales.asistenciaViaje}
-                  onChange={e =>
-                    handleDatosAdicionalesChange("asistenciaViaje", e.target.value)
-                  }
-                  fullWidth
-                >
-                  <MenuItem value="INCLUIDO">Incluido</MenuItem>
-                  <MenuItem value="NO INCLUIDO">No incluido</MenuItem>
-                </TextField>
+                  disabled // Solo lectura
+                />
               </Grid>
               <Grid item xs={6} sm={3}>
                 <TextField
                   label="Años (Acumulación de Capital)"
                   type="number"
                   value={datosAdicionales.aniosAcumulacion}
-                  onChange={e =>
-                    handleDatosAdicionalesChange("aniosAcumulacion", e.target.value)
+                  onChange={(e) =>
+                    handleDatosAdicionalesChange(
+                      "aniosAcumulacion",
+                      e.target.value
+                    )
                   }
                   fullWidth
                 />
@@ -738,7 +758,10 @@ export default function App() {
                   label="Valor Acumulado"
                   value={datosAdicionales.valorAcumulado}
                   onValueChange={(values) =>
-                    handleDatosAdicionalesChange("valorAcumulado", values.value)
+                    handleDatosAdicionalesChange(
+                      "valorAcumulado",
+                      values.value
+                    )
                   }
                   thousandSeparator="."
                   decimalSeparator=","
@@ -749,12 +772,12 @@ export default function App() {
             </Grid>
           </Box>
 
-          {/* BOTÓN FINAL */}
+          {/* Botón final */}
           <Box
             sx={{
               maxWidth: 750,
               margin: "32px auto 40px auto",
-              textAlign: "center"
+              textAlign: "center",
             }}
           >
             <Button
@@ -765,7 +788,7 @@ export default function App() {
                 px: 5,
                 borderRadius: 2,
                 fontWeight: 700,
-                fontSize: 18
+                fontSize: 18,
               }}
               disabled={!datosCompletos}
               onClick={handleGenerarResumen}
@@ -774,13 +797,15 @@ export default function App() {
             </Button>
             {!datosCompletos && (
               <Typography sx={{ color: "#aaa", mt: 2, fontSize: 15 }}>
-                Completa todos los datos y agrega al menos una cobertura y los datos adicionales para continuar
+                Completa todos los datos y agrega al menos una cobertura y los
+                datos adicionales para continuar
               </Typography>
             )}
           </Box>
         </>
       )}
 
+      {/* ======================== RESUMEN PDF ============================== */}
       {showResumen && (
         <div id="pdf-content" style={{ margin: 0, padding: 0 }}>
           {/* PORTADA Y SALTO DE PÁGINA */}
@@ -796,7 +821,7 @@ export default function App() {
               background: "#fff",
               borderRadius: 5,
               boxShadow: "0 2px 32px #b7e4fc44",
-              p: { xs: 2, md: 5 }
+              p: { xs: 2, md: 5 },
             }}
             id="resumen-cotizacion"
           >
@@ -805,7 +830,7 @@ export default function App() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                mb: 4
+                mb: 4,
               }}
             >
               <Box>
@@ -827,7 +852,7 @@ export default function App() {
                   borderRadius: "50%",
                   border: "3px solid #17d4b6",
                   boxShadow: "0 2px 12px #1abc7480",
-                  objectFit: "cover"
+                  objectFit: "cover",
                 }}
               />
             </Box>
@@ -874,7 +899,7 @@ export default function App() {
             </Grid>
             <Divider sx={{ mb: 3 }} />
 
-            {/* Tabla Coberturas EXCEL */}
+            {/* Tabla Coberturas */}
             <Typography
               variant="h6"
               sx={{ color: "#1abc74", mb: 2, fontWeight: 700 }}
@@ -885,116 +910,132 @@ export default function App() {
               <table className="excel-table">
                 <thead>
                   <tr>
-                    <th>Cobertura</th>
-                    <th style={{ textAlign: "right" }}>Valor asegurado</th>
+                    <th>COBERTURA</th>
+                    <th style={{ textAlign: "right" }}>VALOR ASEGURADO</th>
                   </tr>
                 </thead>
                 <tbody>
                   {coberturasSeleccionadas.map((cob, idx) => (
                     <tr key={idx}>
                       <td>{cob.nombre}</td>
-                      <td style={{ textAlign: "right" }}>{formatCurrency(cob.valor)}</td>
+                      <td style={{ textAlign: "right" }}>
+                        {formatCurrency(cob.valor)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
 
-             {/* === BLOQUE DE BENEFICIOS ECOSISTEMA (solo si aplica) === */}
-            {categoriaPoliza === "PLAN_PROTECCION" && tipoPoliza === "Ecosistema" && (
-              <Box
-                sx={{
-                  background: "#e3f4fd",
-                  border: "2px solid #1976d2",
-                  borderRadius: 2,
-                  p: { xs: 2, md: 3 },
-                  my: 3,
-                  boxShadow: "0 2px 12px #1976d2aa",
-                  maxWidth: 700,
-                  margin: "0 auto"
-                }}
-              >
-                <Typography variant="h6" sx={{ color: "#1976d2", fontWeight: 700, mb: 1 }}>
-                  Esta póliza incluye acceso a Ecosistema Bienestar:
-                </Typography>
-                <Typography variant="body1" sx={{ mb: 2 }}>
-                  Accede a nuestra plataforma digital con servicios de:
-                  <b> SALUD A UN CLICK, BIENESTAR INTEGRAL y SALUD MENTAL</b>.
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} md={4}>
-                    <Typography variant="subtitle1" sx={{ color: "#1abc74", fontWeight: 700 }}>
-                      Salud a un click
-                    </Typography>
-                    <ul style={{ margin: 0, paddingLeft: 18 }}>
-                      <li>Orientación veterinaria (video consulta)</li>
-                      <li>Internista (telemedicina)</li>
-                      <li>Enfermería (video consulta)</li>
-                      <li>Wikidoc (Herramienta de consulta)</li>
-                      <li>Exámenes preventivos (Herramienta)</li>
-                      <li>Nutrición (video consulta)</li>
-                      <li>Medicina General (telemedicina)</li>
-                      <li>Dermatólogo (telemedicina)</li>
-                      <li>Ginecólogo (telemedicina)</li>
-                      <li>Farmacia Digital (Herramienta)</li>
-                      <li>Médico domiciliario (Servicio físico)</li>
-                      <li>Exámenes de laboratorio (Herramienta)</li>
-                      <li>Traslado Médico (Servicio físico)</li>
-                    </ul>
+            {/* Beneficios Ecosistema */}
+            {categoriaPoliza === "PLAN_PROTECCION" &&
+              tipoPoliza === "Ecosistema" && (
+                <Box
+                  sx={{
+                    background: "#e3f4fd",
+                    border: "2px solid #1976d2",
+                    borderRadius: 2,
+                    p: { xs: 2, md: 3 },
+                    my: 3,
+                    boxShadow: "0 2px 12px #1976d2aa",
+                    maxWidth: 700,
+                    margin: "0 auto",
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{ color: "#1976d2", fontWeight: 700, mb: 1 }}
+                  >
+                    Esta póliza incluye acceso a Ecosistema Bienestar:
+                  </Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>
+                    Accede a nuestra plataforma digital con servicios de:
+                    <b> SALUD A UN CLICK, BIENESTAR INTEGRAL y SALUD MENTAL</b>.
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={4}>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{ color: "#1abc74", fontWeight: 700 }}
+                      >
+                        Salud a un click
+                      </Typography>
+                      <ul style={{ margin: 0, paddingLeft: 18 }}>
+                        <li>Orientación veterinaria (video consulta)</li>
+                        <li>Internista (telemedicina)</li>
+                        <li>Enfermería (video consulta)</li>
+                        <li>Wikidoc (Herramienta de consulta)</li>
+                        <li>Exámenes preventivos (Herramienta)</li>
+                        <li>Nutrición (video consulta)</li>
+                        <li>Medicina General (telemedicina)</li>
+                        <li>Dermatólogo (telemedicina)</li>
+                        <li>Ginecólogo (telemedicina)</li>
+                        <li>Farmacia Digital (Herramienta)</li>
+                        <li>Médico domiciliario (Servicio físico)</li>
+                        <li>Exámenes de laboratorio (Herramienta)</li>
+                        <li>Traslado Médico (Servicio físico)</li>
+                      </ul>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{ color: "#1abc74", fontWeight: 700 }}
+                      >
+                        Bienestar integral
+                      </Typography>
+                      <ul style={{ margin: 0, paddingLeft: 18 }}>
+                        <li>Yoga (Clase por video)</li>
+                        <li>Pilates (Clase por video)</li>
+                        <li>Entrenador Personal (Clase por video)</li>
+                        <li>Mindfulness (video consulta)</li>
+                      </ul>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{ color: "#1abc74", fontWeight: 700 }}
+                      >
+                        Salud mental
+                      </Typography>
+                      <ul style={{ margin: 0, paddingLeft: 18 }}>
+                        <li>Psicólogo (telemedicina)</li>
+                      </ul>
+                    </Grid>
                   </Grid>
-                  <Grid item xs={12} md={4}>
-                    <Typography variant="subtitle1" sx={{ color: "#1abc74", fontWeight: 700 }}>
-                      Bienestar integral
-                    </Typography>
-                    <ul style={{ margin: 0, paddingLeft: 18 }}>
-                      <li>Yoga (Clase por video)</li>
-                      <li>Pilates (Clase por video)</li>
-                      <li>Entrenador Personal (Clase por video)</li>
-                      <li>Mindfulness (video consulta)</li>
-                    </ul>
-                  </Grid>
-                  <Grid item xs={12} md={4}>
-                    <Typography variant="subtitle1" sx={{ color: "#1abc74", fontWeight: 700 }}>
-                      Salud mental
-                    </Typography>
-                    <ul style={{ margin: 0, paddingLeft: 18 }}>
-                      <li>Psicólogo (telemedicina)</li>
-                    </ul>
-                  </Grid>
-                </Grid>
-              </Box>
-            )}
-            {/* === FIN BLOQUE DE BENEFICIOS ECOSISTEMA === */}
+                </Box>
+              )}
 
-          <Divider sx={{ mb: 3 }} />
+            <Divider sx={{ mb: 3 }} />
 
-            {/* BLOQUE VERDE - NO BREAK */}
+            {/* BLOQUE VERDE - DATOS DE INVERSIÓN */}
             <Box
               className="no-break"
               sx={{
                 background: "#aeea8c",
                 borderRadius: 2,
                 p: 2,
-                mb: 3
+                mb: 3,
               }}
             >
-              <table style={{
-                width: "100%",
-                fontFamily: "inherit",
-                fontSize: 17,
-                background: "#aeea8c",
-                borderRadius: "8px"
-              }}>
+              <table
+                style={{
+                  width: "100%",
+                  fontFamily: "inherit",
+                  fontSize: 17,
+                  background: "#aeea8c",
+                  borderRadius: "8px",
+                }}
+              >
                 <tbody>
                   <tr>
                     <td style={{ fontWeight: 700, padding: 6 }}>
-                      PRIMA MENSUAL DE FONDO DE INVERSIÓN 
+                      PRIMA MENSUAL DE FONDO DE INVERSIÓN
                     </td>
                     <td
                       style={{
                         fontWeight: 700,
                         textAlign: "right",
-                        padding: 6
+                        padding: 6,
                       }}
                     >
                       {formatCurrency(datosAdicionales.primaInversion)}
@@ -1008,26 +1049,10 @@ export default function App() {
                       style={{
                         fontWeight: 700,
                         textAlign: "right",
-                        padding: 6
+                        padding: 6,
                       }}
                     >
                       {formatCurrency(cotizacion.primaMensual)}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ fontWeight: 700, padding: 6 }}>
-                      ASISTENCIA VIAJE INTERNACIONAL
-                    </td>
-                    <td
-                      style={{
-                        fontWeight: 700,
-                        textAlign: "right",
-                        padding: 6
-                      }}
-                    >
-                      {datosAdicionales.asistenciaViaje === "INCLUIDO"
-                        ? "INCLUIDO"
-                        : "NO INCLUIDO"}
                     </td>
                   </tr>
                   <tr>
@@ -1042,7 +1067,7 @@ export default function App() {
                       style={{
                         fontWeight: 700,
                         textAlign: "right",
-                        padding: 6
+                        padding: 6,
                       }}
                     >
                       {formatCurrency(datosAdicionales.valorAcumulado)}
@@ -1052,13 +1077,40 @@ export default function App() {
               </table>
             </Box>
 
+            {/* ============ BLOQUE DE ASISTENCIAS INCLUIDAS ============ */}
+            {asistenciasSeleccionadas.length > 0 && (
+              <Box
+                sx={{
+                  background: "#e8f5e9",
+                  borderRadius: 2,
+                  p: 3,
+                  mb: 3,
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: "#1abc74", fontWeight: 700, mb: 1 }}
+                >
+                  Asistencias incluidas
+                </Typography>
+                <ul style={{ margin: 0, paddingLeft: 22, listStyle: "none" }}>
+                  {asistenciasSeleccionadas.map((asistencia, idx) => (
+                    <li key={idx} style={{ fontSize: 17, marginBottom: 2 }}>
+                    <span style={{ color: "#26b164", fontWeight: "bold", marginRight: 8 }}>✅</span>
+                      {asistencia}
+                    </li>
+                  ))}
+                </ul>
+              </Box>
+            )}
+
             {/* Suma asegurada y Prima mensual */}
             <Box
               sx={{
                 display: "flex",
                 justifyContent: "flex-end",
                 gap: 6,
-                mb: 2
+                mb: 2,
               }}
             >
               <Box>
@@ -1087,7 +1139,7 @@ export default function App() {
                   sx={{
                     fontWeight: 700,
                     fontSize: 20,
-                    color: "#1abc74"
+                    color: "#1abc74",
                   }}
                 >
                   {formatCurrency(datosAdicionales.totalInversion)}
@@ -1095,29 +1147,30 @@ export default function App() {
               </Box>
             </Box>
 
+            {/* Notas/Observaciones */}
             {cotizacion.notas && (
               <Box
                 sx={{
                   background: "#f9fcfa",
                   borderRadius: 2,
                   p: 2,
-                  mb: 2
+                  mb: 2,
                 }}
               >
-                <Typography
-                  variant="subtitle2"
-                  sx={{ color: "#1abc74" }}
-                >
+                <Typography variant="subtitle2" sx={{ color: "#1abc74" }}>
                   Notas/Observaciones:
                 </Typography>
-                <Typography variant="body2">
-                  {cotizacion.notas}
-                </Typography>
+                <Typography variant="body2">{cotizacion.notas}</Typography>
               </Box>
             )}
 
             <Divider sx={{ mb: 2 }} />
-            <Box className="no-break" sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+
+            {/* Datos de la consultora */}
+            <Box
+              className="no-break"
+              sx={{ display: "flex", alignItems: "center", gap: 2 }}
+            >
               <img
                 src={consultora.foto}
                 alt={consultora.nombre}
