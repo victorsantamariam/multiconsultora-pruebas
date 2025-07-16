@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, Grid, TextField, IconButton } from "@mui/material";
+import { Box, Typography, TextField, IconButton, Stack } from "@mui/material";
 import { NumericFormat } from "react-number-format";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Button } from "@mui/material";
@@ -27,33 +27,27 @@ export default function CoberturasDinamicas({ value = [], onChange }) {
         Coberturas adicionales
       </Typography>
       {value.map((cob, idx) => (
-        <Grid container spacing={1} alignItems="center" key={idx} sx={{ mb: 1 }}>
-          <Grid item xs={6}>
-            <TextField
-              label="Cobertura"
-              value={cob.nombre}
-              onChange={e => handleNombre(idx, e.target.value)}
-              fullWidth
-            />
-          </Grid>
-          <Grid item xs={5}>
-            <NumericFormat
-              customInput={TextField}
-              label="Valor asegurado"
-              value={cob.valor}
-              onValueChange={v => handleValor(idx, v.value)}
-              thousandSeparator="."
-              decimalSeparator=","
-              prefix="$ "
-              fullWidth
-            />
-          </Grid>
-          <Grid item xs={1}>
-            <IconButton onClick={() => handleRemove(idx)}>
-              <DeleteIcon />
-            </IconButton>
-          </Grid>
-        </Grid>
+        <Stack direction="row" spacing={1} alignItems="center" key={idx} sx={{ mb: 1 }}>
+          <TextField
+            label="Cobertura"
+            value={cob.nombre}
+            onChange={e => handleNombre(idx, e.target.value)}
+            fullWidth
+          />
+          <NumericFormat
+            customInput={TextField}
+            label="Valor asegurado"
+            value={cob.valor}
+            onValueChange={v => handleValor(idx, v.value)}
+            thousandSeparator="."
+            decimalSeparator=","
+            prefix="$ "
+            fullWidth
+          />
+          <IconButton onClick={() => handleRemove(idx)}>
+            <DeleteIcon />
+          </IconButton>
+        </Stack>
       ))}
       <Button onClick={handleAdd} sx={{ mt: 1 }} variant="outlined">
         Agregar cobertura

@@ -3,56 +3,17 @@ import {
   Box,
   Typography,
   Button,
-  Grid,
   Divider,
   TextField,
   MenuItem,
+  Stack
 } from "@mui/material";
-import { NumericFormat } from "react-number-format";
 import metlifeLogo from "./metlife-logo.png";
-import CoberturasDinamicas from "./components/CoberturasDinamicas";
-import CoberturasFijas from "./components/CoberturasFijas";
-import PdfPortada from "./components/PdfPortada";
 import consultoras from "./data/consultoras";
 import html2pdf from "html2pdf.js";
-import Asistencias from "./components/Asistencias";
-import "./App.css";
+import PdfPortada from "./components/PdfPortada";
+import ProductoForm from "./components/ProductoForm";
 
-// Opciones para el tipo de póliza
-const opcionesPoliza = {
-  VIDA: ["Vida 50", "Vida 60", "Vida 70", "Vida 80", "Vida 99"],
-  PLAN_PROTECCION: [
-    "Puf pesos A",
-    "Puf pesos B",
-    "Puf dólares",
-    "Dotal 15 pagos",
-    "Dotal 20 pagos",
-    "Pensión",
-    "Ap",
-    "Ecosistema",
-    "Temporal 50 años",
-    "Temporal 60 años",
-    "Temporal 70 años",
-    "Temporal 80 años",
-  ],
-};
-
-// Opciones para coberturas fijas
-const opcionesCoberturasFijas = [
-  "Desmembración por accidente",
-  "Muerte por cualquier causa",
-  "Exoneración de pago de primas",
-  "Fractura de huesos y quemaduras graves",
-  "Incapacidad total y permanente",
-  "Reembolso por gastos médicos",
-  "Renta diaria por hospitalización en uci por accidente o enfermedad",
-  "Renta diaria por hospitalización por accidente o enfermedad",
-  "Enfermedades graves",
-  "cancer",
-  "Muerte por accidente",
-];
-
-// Formatea números a moneda
 function formatCurrency(value) {
   if (!value) return "$ 0";
   return (
@@ -63,13 +24,31 @@ function formatCurrency(value) {
   );
 }
 
+// Estado inicial de un producto
+const initialProductState = {
+  categoriaPoliza: "",
+  tipoPoliza: "",
+  cotizacion: {
+    sumaAsegurada: "",
+    primaMensual: "",
+    notas: "",
+  },
+  coberturasFijas: [],
+  coberturasLibres: [],
+  asistenciasSeleccionadas: [],
+  datosAdicionales: {
+    primaInversion: "",
+    totalInversion: "",
+    aniosAcumulacion: "",
+    valorAcumulado: "",
+  },
+};
+
 export default function App() {
-  // Estados principales
+  // Consultora y cliente
   const [codigoConsultora, setCodigoConsultora] = useState("");
   const [consultora, setConsultora] = useState(null);
   const [errorCodigo, setErrorCodigo] = useState("");
-  const [asistenciasSeleccionadas, setAsistenciasSeleccionadas] = useState([]);
-
   const [cliente, setCliente] = useState({
     nombre: "",
     correo: "",
@@ -78,35 +57,30 @@ export default function App() {
     genero: "",
     ciudad: "",
   });
-  const [categoriaPoliza, setCategoriaPoliza] = useState("");
-  const [tipoPoliza, setTipoPoliza] = useState("");
-  const [cotizacion, setCotizacion] = useState({
-    sumaAsegurada: "",
-    primaMensual: "",
-    notas: "",
-  });
-  const [coberturasFijas, setCoberturasFijas] = useState([]);
-  const [coberturasLibres, setCoberturasLibres] = useState([]);
+
+  // Productos
+  const [productos, setProductos] = useState([]);
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [formProducto, setFormProducto] = useState(initialProductState);
+
+  // Otros
   const [showResumen, setShowResumen] = useState(false);
-  const [datosAdicionales, setDatosAdicionales] = useState({
-    primaInversion: "",
-    totalInversion: "",
-    aniosAcumulacion: "",
-    valorAcumulado: "",
-  });
   const [generandoPDF, setGenerandoPDF] = useState(false);
 
   // Actualiza el total de inversión cuando cambian valores relevantes
   useEffect(() => {
-    const primaMensual = Number(cotizacion.primaMensual) || 0;
-    const primaInversion = Number(datosAdicionales.primaInversion) || 0;
+    const primaMensual = Number(formProducto.cotizacion.primaMensual) || 0;
+    const primaInversion = Number(formProducto.datosAdicionales.primaInversion) || 0;
     const total = primaMensual + primaInversion;
 
-    setDatosAdicionales((prev) => ({
+    setFormProducto((prev) => ({
       ...prev,
-      totalInversion: total,
+      datosAdicionales: {
+        ...prev.datosAdicionales,
+        totalInversion: total,
+      },
     }));
-  }, [cotizacion.primaMensual, datosAdicionales.primaInversion]);
+  }, [formProducto.cotizacion.primaMensual, formProducto.datosAdicionales.primaInversion]);
 
   // Manejo de código de consultora
   const handleCodigoSubmit = (e) => {
@@ -123,17 +97,44 @@ export default function App() {
     }
   };
 
-  // Handlers varios
+  // Handlers cliente
   const handleClienteChange = (e) =>
     setCliente({ ...cliente, [e.target.name]: e.target.value });
-  const handleCotizacionChange = (e) =>
-    setCotizacion({ ...cotizacion, [e.target.name]: e.target.value });
-  const handleDatosAdicionalesChange = (name, value) =>
-    setDatosAdicionales((prev) => ({ ...prev, [name]: value }));
 
-  const handleGenerarResumen = () => setShowResumen(true);
+  // Agregar o editar producto
+  const handleSaveProducto = () => {
+    if (editingIndex !== null) {
+      // Editar
+      const nuevos = [...productos];
+      nuevos[editingIndex] = formProducto;
+      setProductos(nuevos);
+      setEditingIndex(null);
+    } else {
+      // Agregar
+      setProductos([...productos, formProducto]);
+    }
+    setFormProducto(initialProductState);
+  };
 
-  // Funciones para PDF y compartir
+  // Editar producto
+  const handleEditProducto = (idx) => {
+    setFormProducto(productos[idx]);
+    setEditingIndex(idx);
+  };
+
+  // Eliminar producto
+  const handleDeleteProducto = (idx) => {
+    if (window.confirm("¿Seguro que deseas eliminar este producto?")) {
+      setProductos(productos.filter((_, i) => i !== idx));
+      // Si estaba editando este, limpia el form
+      if (editingIndex === idx) {
+        setFormProducto(initialProductState);
+        setEditingIndex(null);
+      }
+    }
+  };
+
+  // PDF y compartir (idéntico a antes, solo que ahora usas productos)
   const handleDescargarPDF = async () => {
     setGenerandoPDF(true);
     setTimeout(() => {
@@ -180,31 +181,24 @@ export default function App() {
       `Hola ${cliente.nombre}, te comparto la cotización de seguro MetLife.`
     );
     const celularLimpio = cliente.celular.replace(/\D/g, "");
-  if (celularLimpio) {
-    window.open(`https://wa.me/${celularLimpio}?text=${mensaje}`);
-  } else {
-    alert("El cliente no tiene número de celular registrado.");
-  }
-};
+    if (celularLimpio) {
+      window.open(`https://wa.me/${celularLimpio}?text=${mensaje}`);
+    } else {
+      alert("El cliente no tiene número de celular registrado.");
+    }
+  };
 
-  // Valida que todos los datos necesarios estén completos
+  // Validación para generar PDF (al menos un producto y datos de cliente)
   const datosCompletos =
     cliente.nombre &&
-    tipoPoliza &&
-    cotizacion.primaMensual &&
-    (coberturasFijas.some((c) => c.valor) || coberturasLibres.length > 0) &&
-    datosAdicionales.primaInversion &&
-    datosAdicionales.totalInversion &&
-    datosAdicionales.aniosAcumulacion &&
-    datosAdicionales.valorAcumulado;
+    cliente.correo &&
+    cliente.celular &&
+    cliente.edad &&
+    cliente.genero &&
+    cliente.ciudad &&
+    productos.length > 0;
 
-  // Coberturas seleccionadas (fijas y dinámicas)
-  const coberturasSeleccionadas = [
-    ...coberturasFijas.filter((cob) => cob.valor),
-    ...coberturasLibres,
-  ];
-
-  // FORMULARIO DE CONSULTORA
+  // FORMULARIO DE CONSULTORA (idéntico)
   if (!consultora) {
     return (
       <Box
@@ -326,7 +320,6 @@ export default function App() {
         </Button>
       </Box>
 
-      {/* ============== FORMULARIO PRINCIPAL ================== */}
       {!showResumen && (
         <>
           {/* Datos del cliente */}
@@ -352,424 +345,155 @@ export default function App() {
             >
               Datos del cliente
             </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Nombre completo"
-                  name="nombre"
-                  fullWidth
-                  value={cliente.nombre}
-                  onChange={handleClienteChange}
-                  variant="outlined"
-                  required
-                  autoComplete="off"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Correo electrónico"
-                  name="correo"
-                  type="email"
-                  fullWidth
-                  value={cliente.correo}
-                  onChange={handleClienteChange}
-                  variant="outlined"
-                  required
-                  autoComplete="off"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Celular"
-                  name="celular"
-                  fullWidth
-                  value={cliente.celular}
-                  onChange={handleClienteChange}
-                  variant="outlined"
-                  required
-                  autoComplete="off"
-                />
-              </Grid>
-              <Grid item xs={12} sm={3}>
-                <TextField
-                  label="Edad"
-                  name="edad"
-                  type="number"
-                  fullWidth
-                  value={cliente.edad}
-                  onChange={handleClienteChange}
-                  variant="outlined"
-                  required
-                  inputProps={{ min: 0, max: 100 }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={3}>
-                <TextField
-                  select
-                  label="Género"
-                  name="genero"
-                  fullWidth
-                  value={cliente.genero}
-                  onChange={handleClienteChange}
-                  variant="outlined"
-                  required
-                >
-                  <MenuItem value="">Seleccione</MenuItem>
-                  <MenuItem value="Masculino">Masculino</MenuItem>
-                  <MenuItem value="Femenino">Femenino</MenuItem>
-                  <MenuItem value="Otro">Otro</MenuItem>
-                </TextField>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Ciudad"
-                  name="ciudad"
-                  fullWidth
-                  value={cliente.ciudad}
-                  onChange={handleClienteChange}
-                  variant="outlined"
-                  required
-                  autoComplete="off"
-                />
-              </Grid>
-            </Grid>
-          </Box>
-
-          {/* Selección de póliza */}
-          <Box
-            sx={{
-              maxWidth: 750,
-              margin: "32px auto 0 auto",
-              background: "#fff",
-              borderRadius: 3,
-              boxShadow: "0 2px 24px #b7e4fc33",
-              p: 4,
-            }}
-          >
-            <Typography
-              variant="h6"
-              sx={{
-                color: "#1abc74",
-                mb: 2,
-                fontWeight: 700,
-                letterSpacing: 1,
-              }}
-            >
-              Selecciona el tipo de póliza
-            </Typography>
-            <Grid container spacing={2} sx={{ mb: 2 }}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  select
-                  label="Categoría"
-                  value={categoriaPoliza}
-                  onChange={(e) => {
-                    setCategoriaPoliza(e.target.value);
-                    setTipoPoliza("");
-                  }}
-                  fullWidth
-                  variant="outlined"
-                  required
-                >
-                  <MenuItem value="">Selecciona una categoría</MenuItem>
-                  <MenuItem value="VIDA">VIDA</MenuItem>
-                  <MenuItem value="PLAN_PROTECCION">
-                    PLAN_PROTECCION
-                  </MenuItem>
-                </TextField>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  select
-                  label="Tipo de póliza"
-                  value={tipoPoliza}
-                  onChange={(e) => setTipoPoliza(e.target.value)}
-                  fullWidth
-                  variant="outlined"
-                  required
-                  disabled={!categoriaPoliza}
-                >
-                  <MenuItem value="">Selecciona un tipo</MenuItem>
-                  {categoriaPoliza &&
-                    opcionesPoliza[categoriaPoliza].map((opcion) => (
-                      <MenuItem key={opcion} value={opcion}>
-                        {opcion}
-                      </MenuItem>
-                    ))}
-                </TextField>
-              </Grid>
-            </Grid>
-
-            {/* Beneficios Ecosistema */}
-            {categoriaPoliza === "PLAN_PROTECCION" &&
-              tipoPoliza === "Ecosistema" && (
-                <Box
-                  sx={{
-                    background: "#e3f4fd",
-                    border: "2px solid #1976d2",
-                    borderRadius: 2,
-                    p: { xs: 2, md: 3 },
-                    mt: 4,
-                    mb: 3,
-                    boxShadow: "0 2px 12px #1976d2aa",
-                    maxWidth: 700,
-                    margin: "0 auto",
-                  }}
-                >
-                  <Typography
-                    variant="h6"
-                    sx={{ color: "#1976d2", fontWeight: 700, mb: 1 }}
-                  >
-                    Esta póliza incluye acceso a Ecosistema Bienestar:
-                  </Typography>
-                  <Typography variant="body1" sx={{ mb: 2 }}>
-                    Accede a nuestra plataforma digital con servicios de:
-                    <b> SALUD A UN CLICK, BIENESTAR INTEGRAL y SALUD MENTAL</b>.
-                  </Typography>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={4}>
-                      <Typography
-                        variant="subtitle1"
-                        sx={{ color: "#1abc74", fontWeight: 700 }}
-                      >
-                        Salud a un click
-                      </Typography>
-                      <ul style={{ margin: 0, paddingLeft: 18 }}>
-                        <li>Orientación veterinaria (video consulta)</li>
-                        <li>Internista (telemedicina)</li>
-                        <li>Enfermería (video consulta)</li>
-                        <li>Wikidoc (Herramienta de consulta)</li>
-                        <li>Exámenes preventivos (Herramienta)</li>
-                        <li>Nutrición (video consulta)</li>
-                        <li>Medicina General (telemedicina)</li>
-                        <li>Dermatólogo (telemedicina)</li>
-                        <li>Ginecólogo (telemedicina)</li>
-                        <li>Farmacia Digital (Herramienta)</li>
-                        <li>Médico domiciliario (Servicio físico)</li>
-                        <li>Exámenes de laboratorio (Herramienta)</li>
-                        <li>Traslado Médico (Servicio físico)</li>
-                      </ul>
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                      <Typography
-                        variant="subtitle1"
-                        sx={{ color: "#1abc74", fontWeight: 700 }}
-                      >
-                        Bienestar integral
-                      </Typography>
-                      <ul style={{ margin: 0, paddingLeft: 18 }}>
-                        <li>Yoga (Clase por video)</li>
-                        <li>Pilates (Clase por video)</li>
-                        <li>Entrenador Personal (Clase por video)</li>
-                        <li>Mindfulness (video consulta)</li>
-                      </ul>
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                      <Typography
-                        variant="subtitle1"
-                        sx={{ color: "#1abc74", fontWeight: 700 }}
-                      >
-                        Salud mental
-                      </Typography>
-                      <ul style={{ margin: 0, paddingLeft: 18 }}>
-                        <li>Psicólogo (telemedicina)</li>
-                      </ul>
-                    </Grid>
-                  </Grid>
-                </Box>
-              )}
-          </Box>
-
-          {/* Cotización */}
-          <Box
-            sx={{
-              maxWidth: 750,
-              margin: "32px auto 0 auto",
-              background: "#fff",
-              borderRadius: 3,
-              boxShadow: "0 2px 24px #b7e4fc33",
-              p: 4,
-            }}
-          >
-            <Typography
-              variant="h6"
-              sx={{
-                color: "#1abc74",
-                mb: 2,
-                fontWeight: 700,
-                letterSpacing: 1,
-              }}
-            >
-              Datos de la cotización
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <NumericFormat
-                  customInput={TextField}
-                  label="Suma asegurada"
-                  name="sumaAsegurada"
-                  fullWidth
-                  value={cotizacion.sumaAsegurada}
-                  onValueChange={(values) =>
-                    setCotizacion((cot) => ({
-                      ...cot,
-                      sumaAsegurada: values.value,
-                    }))
-                  }
-                  variant="outlined"
-                  required
-                  thousandSeparator="."
-                  decimalSeparator=","
-                  prefix="$ "
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <NumericFormat
-                  customInput={TextField}
-                  label="Prima mensual"
-                  name="primaMensual"
-                  fullWidth
-                  value={cotizacion.primaMensual}
-                  onValueChange={(values) =>
-                    setCotizacion((cot) => ({
-                      ...cot,
-                      primaMensual: values.value,
-                    }))
-                  }
-                  variant="outlined"
-                  required
-                  thousandSeparator="."
-                  decimalSeparator=","
-                  prefix="$ "
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  label="Notas adicionales / Observaciones"
-                  name="notas"
-                  fullWidth
-                  multiline
-                  minRows={2}
-                  maxRows={4}
-                  value={cotizacion.notas}
-                  onChange={handleCotizacionChange}
-                  variant="outlined"
-                />
-              </Grid>
-            </Grid>
-          </Box>
-
-          {/* Coberturas fijas + dinámicas */}
-          <Box
-            sx={{
-              maxWidth: 750,
-              margin: "32px auto 0 auto",
-              background: "#fff",
-              borderRadius: 3,
-              boxShadow: "0 2px 24px #b7e4fc33",
-              p: 4,
-            }}
-          >
-            <CoberturasFijas
-              value={coberturasFijas}
-              onChange={setCoberturasFijas}
-              opciones={opcionesCoberturasFijas}
-            />
-            <Box sx={{ mt: 4 }}>
-              <CoberturasDinamicas
-                value={coberturasLibres}
-                onChange={setCoberturasLibres}
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2} useFlexGap flexWrap="wrap">
+              <TextField
+                label="Nombre completo"
+                name="nombre"
+                fullWidth
+                value={cliente.nombre}
+                onChange={handleClienteChange}
+                variant="outlined"
+                required
+                autoComplete="off"
+                sx={{ minWidth: 220 }}
               />
-            </Box>
+              <TextField
+                label="Correo electrónico"
+                name="correo"
+                type="email"
+                fullWidth
+                value={cliente.correo}
+                onChange={handleClienteChange}
+                variant="outlined"
+                required
+                autoComplete="off"
+                sx={{ minWidth: 220 }}
+              />
+              <TextField
+                label="Celular"
+                name="celular"
+                fullWidth
+                value={cliente.celular}
+                onChange={handleClienteChange}
+                variant="outlined"
+                required
+                autoComplete="off"
+                sx={{ minWidth: 220 }}
+              />
+              <TextField
+                label="Edad"
+                name="edad"
+                type="number"
+                fullWidth
+                value={cliente.edad}
+                onChange={handleClienteChange}
+                variant="outlined"
+                required
+                inputProps={{ min: 0, max: 100 }}
+                sx={{ minWidth: 120 }}
+              />
+              <TextField
+                select
+                label="Género"
+                name="genero"
+                fullWidth
+                value={cliente.genero}
+                onChange={handleClienteChange}
+                variant="outlined"
+                required
+                sx={{ minWidth: 120 }}
+              >
+                <MenuItem value="">Seleccione</MenuItem>
+                <MenuItem value="Masculino">Masculino</MenuItem>
+                <MenuItem value="Femenino">Femenino</MenuItem>
+                <MenuItem value="Otro">Otro</MenuItem>
+              </TextField>
+              <TextField
+                label="Ciudad"
+                name="ciudad"
+                fullWidth
+                value={cliente.ciudad}
+                onChange={handleClienteChange}
+                variant="outlined"
+                required
+                autoComplete="off"
+                sx={{ minWidth: 180 }}
+              />
+            </Stack>
           </Box>
 
-          {/* Asistencias */}
-          <Asistencias
-            seleccionadas={asistenciasSeleccionadas}
-            onChange={setAsistenciasSeleccionadas}
+          {/* Formulario de producto */}
+          <ProductoForm
+            value={formProducto}
+            onChange={setFormProducto}
+            onSave={handleSaveProducto}
+            editing={editingIndex !== null}
+            onCancel={() => {
+              setFormProducto(initialProductState);
+              setEditingIndex(null);
+            }}
           />
 
-          {/* Datos adicionales de inversión */}
+          {/* Lista de productos agregados */}
           <Box
             sx={{
               maxWidth: 750,
-              margin: "32px auto 0 auto",
+              margin: "0 auto 24px auto",
               background: "#fff",
               borderRadius: 3,
-              boxShadow: "0 2px 24px #b7e4fc33",
-              p: 4,
+              boxShadow: "0 2px 10px #b7e4fc33",
+              p: 3,
             }}
           >
-            <Typography
-              variant="h6"
-              sx={{
-                color: "#1abc74",
-                mb: 2,
-                fontWeight: 700,
-                letterSpacing: 1,
-              }}
-            >
-              Datos adicionales de inversión
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+              Productos agregados a la cotización
             </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <NumericFormat
-                  customInput={TextField}
-                  label="Prima de Inversión Mensual"
-                  value={datosAdicionales.primaInversion}
-                  onValueChange={(values) =>
-                    handleDatosAdicionalesChange("primaInversion", values.value)
-                  }
-                  thousandSeparator="."
-                  decimalSeparator=","
-                  prefix="$ "
-                  fullWidth
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <NumericFormat
-                  customInput={TextField}
-                  label="Total Inversión Mensual"
-                  value={datosAdicionales.totalInversion}
-                  thousandSeparator="."
-                  decimalSeparator=","
-                  prefix="$ "
-                  fullWidth
-                  disabled // Solo lectura
-                />
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <TextField
-                  label="Años (Acumulación de Capital)"
-                  type="number"
-                  value={datosAdicionales.aniosAcumulacion}
-                  onChange={(e) =>
-                    handleDatosAdicionalesChange(
-                      "aniosAcumulacion",
-                      e.target.value
-                    )
-                  }
-                  fullWidth
-                />
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <NumericFormat
-                  customInput={TextField}
-                  label="Valor Acumulado"
-                  value={datosAdicionales.valorAcumulado}
-                  onValueChange={(values) =>
-                    handleDatosAdicionalesChange(
-                      "valorAcumulado",
-                      values.value
-                    )
-                  }
-                  thousandSeparator="."
-                  decimalSeparator=","
-                  prefix="$ "
-                  fullWidth
-                />
-              </Grid>
-            </Grid>
+            {productos.length === 0 && (
+              <Typography sx={{ color: "#999" }}>
+                No has agregado productos aún.
+              </Typography>
+            )}
+            {productos.map((prod, idx) => (
+              <Box
+                key={idx}
+                sx={{
+                  mb: 2,
+                  p: 2,
+                  background: "#f5fcf8",
+                  borderRadius: 2,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Box>
+                  <Typography>
+                    <b>{prod.tipoPoliza}</b> ({prod.categoriaPoliza})
+                  </Typography>
+                  <Typography sx={{ fontSize: 14, color: "#888" }}>
+                    Prima: {formatCurrency(prod.cotizacion.primaMensual)} | Suma asegurada: {formatCurrency(prod.cotizacion.sumaAsegurada)}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    sx={{ mr: 1 }}
+                    onClick={() => handleEditProducto(idx)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="error"
+                    onClick={() => handleDeleteProducto(idx)}
+                  >
+                    Eliminar
+                  </Button>
+                </Box>
+              </Box>
+            ))}
           </Box>
 
           {/* Botón final */}
@@ -791,14 +515,13 @@ export default function App() {
                 fontSize: 18,
               }}
               disabled={!datosCompletos}
-              onClick={handleGenerarResumen}
+              onClick={() => setShowResumen(true)}
             >
               Generar cotización y compartir
             </Button>
             {!datosCompletos && (
               <Typography sx={{ color: "#aaa", mt: 2, fontSize: 15 }}>
-                Completa todos los datos y agrega al menos una cobertura y los
-                datos adicionales para continuar
+                Completa los datos del cliente y agrega al menos un producto para continuar
               </Typography>
             )}
           </Box>
@@ -813,7 +536,7 @@ export default function App() {
           <PdfPortada consultora={consultora} />
           <div style={{ pageBreakAfter: "" }} />
 
-          {/* COTIZACIÓN */}
+          {/* COTIZACIÓN: recorrer productos */}
           <Box
             sx={{
               maxWidth: 900,
@@ -857,312 +580,231 @@ export default function App() {
               />
             </Box>
             <Divider sx={{ mb: 3 }} />
-            <Grid container spacing={2} sx={{ mb: 2 }}>
-              <Grid item xs={12} md={7}>
-                <Typography
-                  variant="subtitle1"
-                  sx={{ color: "#777", fontWeight: 700 }}
-                >
-                  Cliente:
-                </Typography>
-                <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                  {cliente.nombre}
-                </Typography>
-                <Typography variant="body2">
-                  Correo: {cliente.correo || "-"}
-                </Typography>
-                <Typography variant="body2">
-                  Celular: {cliente.celular || "-"}
-                </Typography>
-                <Typography variant="body2">
-                  Edad: {cliente.edad || "-"} &nbsp;|&nbsp; Género:{" "}
-                  {cliente.genero || "-"}
-                </Typography>
-                <Typography variant="body2">
-                  Ciudad: {cliente.ciudad || "-"}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={5}>
-                <Typography
-                  variant="subtitle1"
-                  sx={{ color: "#777", fontWeight: 700 }}
-                >
-                  Póliza:
-                </Typography>
-                <Typography variant="body2">
-                  Categoría: <b>{categoriaPoliza}</b>
-                </Typography>
-                <Typography variant="body2">
-                  Tipo: <b>{tipoPoliza}</b>
-                </Typography>
-              </Grid>
-            </Grid>
+
+            <Box sx={{ mb: 2 }}>
+              <Typography
+                variant="subtitle1"
+                sx={{ color: "#777", fontWeight: 700 }}
+              >
+                Cliente:
+              </Typography>
+              <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                {cliente.nombre}
+              </Typography>
+              <Typography variant="body2">
+                Correo: {cliente.correo || "-"}
+              </Typography>
+              <Typography variant="body2">
+                Celular: {cliente.celular || "-"}
+              </Typography>
+              <Typography variant="body2">
+                Edad: {cliente.edad || "-"} &nbsp;|&nbsp; Género:{" "}
+                {cliente.genero || "-"}
+              </Typography>
+              <Typography variant="body2">
+                Ciudad: {cliente.ciudad || "-"}
+              </Typography>
+            </Box>
             <Divider sx={{ mb: 3 }} />
 
-            {/* Tabla Coberturas */}
-            <Typography
-              variant="h6"
-              sx={{ color: "#1abc74", mb: 2, fontWeight: 700 }}
-            >
-              Coberturas incluidas
-            </Typography>
-            <div style={{ overflowX: "auto", marginBottom: 24 }}>
-              <table className="excel-table">
-                <thead>
-                  <tr>
-                    <th>COBERTURA</th>
-                    <th style={{ textAlign: "right" }}>VALOR ASEGURADO</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {coberturasSeleccionadas.map((cob, idx) => (
-                    <tr key={idx}>
-                      <td>{cob.nombre}</td>
-                      <td style={{ textAlign: "right" }}>
-                        {formatCurrency(cob.valor)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            {productos.map((prod, idx) => (
+              <Box
+                key={idx}
+                sx={{
+                  background: "#fafcff",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: 3,
+                  p: 3,
+                  mb: 5,
+                }}
+              >
+                <Typography variant="h6" sx={{ color: "#1976d2", fontWeight: 700, mb: 1 }}>
+                  Producto {idx + 1}: {prod.tipoPoliza} ({prod.categoriaPoliza})
+                </Typography>
 
-            {/* Beneficios Ecosistema */}
-            {categoriaPoliza === "PLAN_PROTECCION" &&
-              tipoPoliza === "Ecosistema" && (
+                {/* Tabla Coberturas */}
+                <Typography
+                  variant="subtitle1"
+                  sx={{ color: "#1abc74", mb: 1, fontWeight: 700 }}
+                >
+                  Coberturas incluidas
+                </Typography>
+                <div style={{ overflowX: "auto", marginBottom: 12 }}>
+                  <table className="excel-table">
+                    <thead>
+                      <tr>
+                        <th>COBERTURA</th>
+                        <th style={{ textAlign: "right" }}>VALOR ASEGURADO</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...(prod.coberturasFijas || []).filter(c => c.valor), ...(prod.coberturasLibres || [])].map((cob, idx2) => (
+                        <tr key={idx2}>
+                          <td>{cob.nombre}</td>
+                          <td style={{ textAlign: "right" }}>
+                            {formatCurrency(cob.valor)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Asistencias incluidas */}
+                {prod.asistenciasSeleccionadas.length > 0 && (
+                  <Box
+                    sx={{
+                      background: "#e8f5e9",
+                      borderRadius: 2,
+                      p: 2,
+                      mb: 2,
+                    }}
+                  >
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ color: "#1abc74", fontWeight: 700, mb: 1 }}
+                    >
+                      Asistencias incluidas
+                    </Typography>
+                    <ul style={{ margin: 0, paddingLeft: 22, listStyle: "none" }}>
+                      {prod.asistenciasSeleccionadas.map((asistencia, idx3) => (
+                        <li key={idx3} style={{ fontSize: 17, marginBottom: 2 }}>
+                          <span style={{ color: "#26b164", fontWeight: "bold", marginRight: 8 }}>✅</span>
+                          {asistencia}
+                        </li>
+                      ))}
+                    </ul>
+                  </Box>
+                )}
+
+                {/* Datos de inversión */}
+                <Box
+                  className="no-break"
+                  sx={{
+                    background: "#aeea8c",
+                    borderRadius: 2,
+                    p: 2,
+                    mb: 2,
+                  }}
+                >
+                  <table
+                    style={{
+                      width: "100%",
+                      fontFamily: "inherit",
+                      fontSize: 17,
+                      background: "#aeea8c",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <tbody>
+                      <tr>
+                        <td style={{ fontWeight: 700, padding: 6 }}>
+                          PRIMA MENSUAL DE FONDO DE INVERSIÓN
+                        </td>
+                        <td
+                          style={{
+                            fontWeight: 700,
+                            textAlign: "right",
+                            padding: 6,
+                          }}
+                        >
+                          {formatCurrency(prod.datosAdicionales.primaInversion)}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ fontWeight: 700, padding: 6 }}>
+                          PRIMA MENSUAL DE PROTECCIÓN
+                        </td>
+                        <td
+                          style={{
+                            fontWeight: 700,
+                            textAlign: "right",
+                            padding: 6,
+                          }}
+                        >
+                          {formatCurrency(prod.cotizacion.primaMensual)}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ fontWeight: 700, padding: 6 }}>
+                          ACUMULACIÓN DE CAPITAL A LOS{" "}
+                          {prod.datosAdicionales.aniosAcumulacion || "___"} AÑOS
+                        </td>
+                        <td
+                          style={{
+                            fontWeight: 700,
+                            textAlign: "right",
+                            padding: 6,
+                          }}
+                        >
+                          {formatCurrency(prod.datosAdicionales.valorAcumulado)}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </Box>
+
+                {/* Notas/observaciones */}
+                {prod.cotizacion.notas && (
+                  <Box
+                    sx={{
+                      background: "#f9fcfa",
+                      borderRadius: 2,
+                      p: 2,
+                      mb: 1,
+                    }}
+                  >
+                    <Typography variant="subtitle2" sx={{ color: "#1abc74" }}>
+                      Notas/Observaciones:
+                    </Typography>
+                    <Typography variant="body2">{prod.cotizacion.notas}</Typography>
+                  </Box>
+                )}
+
+                {/* Suma asegurada y Prima mensual */}
                 <Box
                   sx={{
-                    background: "#e3f4fd",
-                    border: "2px solid #1976d2",
-                    borderRadius: 2,
-                    p: { xs: 2, md: 3 },
-                    my: 3,
-                    boxShadow: "0 2px 12px #1976d2aa",
-                    maxWidth: 700,
-                    margin: "0 auto",
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: 6,
+                    mb: 2,
                   }}
                 >
-                  <Typography
-                    variant="h6"
-                    sx={{ color: "#1976d2", fontWeight: 700, mb: 1 }}
-                  >
-                    Esta póliza incluye acceso a Ecosistema Bienestar:
-                  </Typography>
-                  <Typography variant="body1" sx={{ mb: 2 }}>
-                    Accede a nuestra plataforma digital con servicios de:
-                    <b> SALUD A UN CLICK, BIENESTAR INTEGRAL y SALUD MENTAL</b>.
-                  </Typography>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={4}>
-                      <Typography
-                        variant="subtitle1"
-                        sx={{ color: "#1abc74", fontWeight: 700 }}
-                      >
-                        Salud a un click
-                      </Typography>
-                      <ul style={{ margin: 0, paddingLeft: 18 }}>
-                        <li>Orientación veterinaria (video consulta)</li>
-                        <li>Internista (telemedicina)</li>
-                        <li>Enfermería (video consulta)</li>
-                        <li>Wikidoc (Herramienta de consulta)</li>
-                        <li>Exámenes preventivos (Herramienta)</li>
-                        <li>Nutrición (video consulta)</li>
-                        <li>Medicina General (telemedicina)</li>
-                        <li>Dermatólogo (telemedicina)</li>
-                        <li>Ginecólogo (telemedicina)</li>
-                        <li>Farmacia Digital (Herramienta)</li>
-                        <li>Médico domiciliario (Servicio físico)</li>
-                        <li>Exámenes de laboratorio (Herramienta)</li>
-                        <li>Traslado Médico (Servicio físico)</li>
-                      </ul>
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                      <Typography
-                        variant="subtitle1"
-                        sx={{ color: "#1abc74", fontWeight: 700 }}
-                      >
-                        Bienestar integral
-                      </Typography>
-                      <ul style={{ margin: 0, paddingLeft: 18 }}>
-                        <li>Yoga (Clase por video)</li>
-                        <li>Pilates (Clase por video)</li>
-                        <li>Entrenador Personal (Clase por video)</li>
-                        <li>Mindfulness (video consulta)</li>
-                      </ul>
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                      <Typography
-                        variant="subtitle1"
-                        sx={{ color: "#1abc74", fontWeight: 700 }}
-                      >
-                        Salud mental
-                      </Typography>
-                      <ul style={{ margin: 0, paddingLeft: 18 }}>
-                        <li>Psicólogo (telemedicina)</li>
-                      </ul>
-                    </Grid>
-                  </Grid>
+                  <Box>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ color: "#888", fontWeight: 600 }}
+                    >
+                      Suma asegurada total:
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{ fontWeight: 700, fontSize: 20 }}
+                    >
+                      {formatCurrency(prod.cotizacion.sumaAsegurada)}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ color: "#888", fontWeight: 600 }}
+                    >
+                      Total inversión mensual:
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        fontWeight: 700,
+                        fontSize: 20,
+                        color: "#1abc74",
+                      }}
+                    >
+                      {formatCurrency(prod.datosAdicionales.totalInversion)}
+                    </Typography>
+                  </Box>
                 </Box>
-              )}
-
-            <Divider sx={{ mb: 3 }} />
-
-            {/* BLOQUE VERDE - DATOS DE INVERSIÓN */}
-            <Box
-              className="no-break"
-              sx={{
-                background: "#aeea8c",
-                borderRadius: 2,
-                p: 2,
-                mb: 3,
-              }}
-            >
-              <table
-                style={{
-                  width: "100%",
-                  fontFamily: "inherit",
-                  fontSize: 17,
-                  background: "#aeea8c",
-                  borderRadius: "8px",
-                }}
-              >
-                <tbody>
-                  <tr>
-                    <td style={{ fontWeight: 700, padding: 6 }}>
-                      PRIMA MENSUAL DE FONDO DE INVERSIÓN
-                    </td>
-                    <td
-                      style={{
-                        fontWeight: 700,
-                        textAlign: "right",
-                        padding: 6,
-                      }}
-                    >
-                      {formatCurrency(datosAdicionales.primaInversion)}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ fontWeight: 700, padding: 6 }}>
-                      PRIMA MENSUAL DE PROTECCIÓN
-                    </td>
-                    <td
-                      style={{
-                        fontWeight: 700,
-                        textAlign: "right",
-                        padding: 6,
-                      }}
-                    >
-                      {formatCurrency(cotizacion.primaMensual)}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ fontWeight: 700, padding: 6 }}>
-                      ACUMULACIÓN DE CAPITAL A LOS{" "}
-                      {datosAdicionales.aniosAcumulacion
-                        ? datosAdicionales.aniosAcumulacion
-                        : "___"}{" "}
-                      AÑOS
-                    </td>
-                    <td
-                      style={{
-                        fontWeight: 700,
-                        textAlign: "right",
-                        padding: 6,
-                      }}
-                    >
-                      {formatCurrency(datosAdicionales.valorAcumulado)}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </Box>
-
-            {/* ============ BLOQUE DE ASISTENCIAS INCLUIDAS ============ */}
-            {asistenciasSeleccionadas.length > 0 && (
-              <Box
-                sx={{
-                  background: "#e8f5e9",
-                  borderRadius: 2,
-                  p: 3,
-                  mb: 3,
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{ color: "#1abc74", fontWeight: 700, mb: 1 }}
-                >
-                  Asistencias incluidas
-                </Typography>
-                <ul style={{ margin: 0, paddingLeft: 22, listStyle: "none" }}>
-                  {asistenciasSeleccionadas.map((asistencia, idx) => (
-                    <li key={idx} style={{ fontSize: 17, marginBottom: 2 }}>
-                    <span style={{ color: "#26b164", fontWeight: "bold", marginRight: 8 }}>✅</span>
-                      {asistencia}
-                    </li>
-                  ))}
-                </ul>
               </Box>
-            )}
-
-            {/* Suma asegurada y Prima mensual */}
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: 6,
-                mb: 2,
-              }}
-            >
-              <Box>
-                <Typography
-                  variant="subtitle2"
-                  sx={{ color: "#888", fontWeight: 600 }}
-                >
-                  Suma asegurada total:
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{ fontWeight: 700, fontSize: 20 }}
-                >
-                  {formatCurrency(cotizacion.sumaAsegurada)}
-                </Typography>
-              </Box>
-              <Box>
-                <Typography
-                  variant="subtitle2"
-                  sx={{ color: "#888", fontWeight: 600 }}
-                >
-                  Total inversión mensual:
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: 20,
-                    color: "#1abc74",
-                  }}
-                >
-                  {formatCurrency(datosAdicionales.totalInversion)}
-                </Typography>
-              </Box>
-            </Box>
-
-            {/* Notas/Observaciones */}
-            {cotizacion.notas && (
-              <Box
-                sx={{
-                  background: "#f9fcfa",
-                  borderRadius: 2,
-                  p: 2,
-                  mb: 2,
-                }}
-              >
-                <Typography variant="subtitle2" sx={{ color: "#1abc74" }}>
-                  Notas/Observaciones:
-                </Typography>
-                <Typography variant="body2">{cotizacion.notas}</Typography>
-              </Box>
-            )}
+            ))}
 
             <Divider sx={{ mb: 2 }} />
 

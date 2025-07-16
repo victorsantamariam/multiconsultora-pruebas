@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, Grid, TextField, Chip } from "@mui/material";
+import { Box, Typography, TextField, Chip, Stack } from "@mui/material";
 import { NumericFormat } from "react-number-format";
 
 export default function CoberturasFijas({ value = [], onChange, opciones = [] }) {
@@ -37,32 +37,28 @@ export default function CoberturasFijas({ value = [], onChange, opciones = [] })
       </Box>
 
       {value.length > 0 && (
-        <Grid container spacing={2}>
+        <Stack spacing={2}>
           {value.map((cob, idx) => (
-            <React.Fragment key={cob.nombre}>
-              <Grid item xs={7} sm={8}>
-                <Chip
-                  label={cob.nombre}
-                  color="success"
-                  onDelete={() => handleRemove(cob.nombre)}
-                  sx={{ mb: 1 }}
-                />
-              </Grid>
-              <Grid item xs={5} sm={4}>
-                <NumericFormat
-                  customInput={TextField}
-                  value={cob.valor || ""}
-                  onValueChange={v => handleValorChange(idx, v.value)}
-                  thousandSeparator="."
-                  decimalSeparator=","
-                  prefix="$ "
-                  fullWidth
-                  label="Valor asegurado"
-                />
-              </Grid>
-            </React.Fragment>
+            <Stack direction="row" spacing={2} alignItems="center" key={cob.nombre}>
+              <Chip
+                label={cob.nombre}
+                color="success"
+                onDelete={() => handleRemove(cob.nombre)}
+                sx={{ mb: 1 }}
+              />
+              <NumericFormat
+                customInput={TextField}
+                value={cob.valor || ""}
+                onValueChange={v => handleValorChange(idx, v.value)}
+                thousandSeparator="."
+                decimalSeparator=","
+                prefix="$ "
+                fullWidth
+                label="Valor asegurado"
+              />
+            </Stack>
           ))}
-        </Grid>
+        </Stack>
       )}
     </Box>
   );
