@@ -5,7 +5,6 @@ import CoberturasFijas from "./CoberturasFijas";
 import CoberturasDinamicas from "./CoberturasDinamicas";
 import Asistencias from "./Asistencias";
 
-// Opciones para el tipo de póliza
 const opcionesPoliza = {
   VIDA: ["Vida 50", "Vida 60", "Vida 70", "Vida 80", "Vida 99"],
   PLAN_PROTECCION: [
@@ -47,8 +46,10 @@ function ProductoForm({
 }) {
   // Para campos anidados
   const updateField = (field, val) => {
-    onChange({ ...value, [field]: val });
-  };
+  const nuevo = { ...value, [field]: val };
+  console.log('Llamando a setFormProducto con:', nuevo);
+  onChange(nuevo);
+};
   const updateNested = (parent, field, val) => {
     onChange({
       ...value,
@@ -101,9 +102,14 @@ function ProductoForm({
           label="Categoría"
           value={value.categoriaPoliza || ""}
           onChange={e => {
-            updateField("categoriaPoliza", e.target.value);
-            updateField("tipoPoliza", "");
-          }}
+  console.log("Seleccionaste categoría:", e.target.value);
+  // Actualiza ambos campos en un solo objeto
+  onChange({
+    ...value,
+    categoriaPoliza: e.target.value,
+    tipoPoliza: "",
+  });
+}}
           fullWidth
           required
           InputProps={{ style: { minWidth: 220 } }}
@@ -131,6 +137,10 @@ function ProductoForm({
             ))}
         </TextField>
       </Stack>
+      {/* Depuración visual */}
+      <Typography sx={{ mt: 1, color: "#888", fontSize: 13 }}>
+        Categoría seleccionada: {value.categoriaPoliza || "(ninguna)"}
+      </Typography>
       {/* Cotización */}
       <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 2 }}>
         <NumericFormat

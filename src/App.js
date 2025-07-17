@@ -14,16 +14,6 @@ import html2pdf from "html2pdf.js";
 import PdfPortada from "./components/PdfPortada";
 import ProductoForm from "./components/ProductoForm";
 
-function formatCurrency(value) {
-  if (!value) return "$ 0";
-  return (
-    "$ " +
-    value
-      .toString()
-      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-  );
-}
-
 // Estado inicial de un producto
 const initialProductState = {
   categoriaPoliza: "",
@@ -44,6 +34,17 @@ const initialProductState = {
   },
 };
 
+// Formato moneda
+function formatCurrency(value) {
+  if (!value) return "$ 0";
+  return (
+    "$ " +
+    value
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+  );
+}
+
 export default function App() {
   // Consultora y cliente
   const [codigoConsultora, setCodigoConsultora] = useState("");
@@ -61,25 +62,28 @@ export default function App() {
   // Productos
   const [productos, setProductos] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
-  const [formProducto, setFormProducto] = useState(initialProductState);
+  const [formProducto, setFormProductoOriginal] = useState(initialProductState);
 
-  // Otros
-  const [showResumen, setShowResumen] = useState(false);
-  const [generandoPDF, setGenerandoPDF] = useState(false);
+  // Proxy para actualizar el formulario
+  const setFormProducto = (nuevoEstado) => {
+    setFormProductoOriginal(nuevoEstado);
+  };
 
   // Actualiza el total de inversión cuando cambian valores relevantes
   useEffect(() => {
     const primaMensual = Number(formProducto.cotizacion.primaMensual) || 0;
     const primaInversion = Number(formProducto.datosAdicionales.primaInversion) || 0;
     const total = primaMensual + primaInversion;
-
-    setFormProducto((prev) => ({
-      ...prev,
-      datosAdicionales: {
-        ...prev.datosAdicionales,
-        totalInversion: total,
-      },
-    }));
+    // Solo actualiza si el total es diferente
+    if (formProducto.datosAdicionales.totalInversion !== total) {
+      setFormProducto((prev) => ({
+        ...prev,
+        datosAdicionales: {
+          ...prev.datosAdicionales,
+          totalInversion: total,
+        },
+      }));
+    }
   }, [formProducto.cotizacion.primaMensual, formProducto.datosAdicionales.primaInversion]);
 
   // Manejo de código de consultora
@@ -101,7 +105,7 @@ export default function App() {
   const handleClienteChange = (e) =>
     setCliente({ ...cliente, [e.target.name]: e.target.value });
 
-  // Agregar o editar producto
+  // Guardar o editar producto
   const handleSaveProducto = () => {
     if (editingIndex !== null) {
       // Editar
@@ -134,7 +138,10 @@ export default function App() {
     }
   };
 
-  // PDF y compartir (idéntico a antes, solo que ahora usas productos)
+  // PDF y compartir
+  const [showResumen, setShowResumen] = useState(false);
+  const [generandoPDF, setGenerandoPDF] = useState(false);
+
   const handleDescargarPDF = async () => {
     setGenerandoPDF(true);
     setTimeout(() => {
@@ -198,7 +205,7 @@ export default function App() {
     cliente.ciudad &&
     productos.length > 0;
 
-  // FORMULARIO DE CONSULTORA (idéntico)
+  // FORMULARIO DE CONSULTORA
   if (!consultora) {
     return (
       <Box
