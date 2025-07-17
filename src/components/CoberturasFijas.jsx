@@ -20,9 +20,6 @@ export default function CoberturasFijas({ value = [], onChange, opciones = [] })
 
   return (
     <Box>
-      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-        Coberturas fijas
-      </Typography>
       <Box sx={{ mb: 2, display: "flex", flexWrap: "wrap", gap: 1 }}>
         {opciones.map(opcion => (
           <Chip

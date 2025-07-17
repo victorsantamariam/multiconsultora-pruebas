@@ -23,9 +23,6 @@ export default function CoberturasDinamicas({ value = [], onChange }) {
   };
   return (
     <Box>
-      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-        Coberturas adicionales
-      </Typography>
       {value.map((cob, idx) => (
         <Stack direction="row" spacing={1} alignItems="center" key={idx} sx={{ mb: 1 }}>
           <TextField

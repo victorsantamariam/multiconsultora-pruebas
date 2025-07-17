@@ -35,10 +35,7 @@ export default function Asistencias({ seleccionadas, onChange }) {
         mt: 4,
       }}
     >
-      <Typography variant="h6" sx={{ color: "#1abc74", mb: 2, fontWeight: 700 }}>
-        Asistencias
-      </Typography>
-      <FormGroup>
+       <FormGroup>
         {asistenciasDisponibles.map(asistencia => (
           <FormControlLabel
             key={asistencia}

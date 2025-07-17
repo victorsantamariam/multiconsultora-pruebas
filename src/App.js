@@ -475,7 +475,7 @@ export default function App() {
                     alignItems: "center",
                     justifyContent: "space-between",
                   }}
-                >
+                  >
                   <Box>
                     <Typography>
                       <b>{prod.tipoPoliza}</b> ({prod.categoriaPoliza})
@@ -617,6 +617,7 @@ export default function App() {
 
               {productos.map((prod, idx) => (
                 <Box
+                
                   key={idx}
                   sx={{
                     background: "#fafcff",
@@ -629,7 +630,7 @@ export default function App() {
                   <Typography variant="h6" sx={{ color: "#1976d2", fontWeight: 700, mb: 1 }}>
                     Producto {idx + 1}: {prod.tipoPoliza} ({prod.categoriaPoliza})
                   </Typography>
-
+               
                   {/* Tabla Coberturas */}
                   <Typography
                     variant="subtitle1"
@@ -657,6 +658,58 @@ export default function App() {
                       </tbody>
                     </table>
                   </div>
+                   {/* TARJETA ECOSISTEMA BIENESTAR */}
+                {prod.categoriaPoliza === "PLAN_PROTECCION" && prod.tipoPoliza === "Ecosistema" && (
+                  <Box sx={{
+                    background: "#e3f3fd",
+                    border: "2px solid #2196f3",
+                    borderRadius: 3,
+                    p: 3,
+                    mt: 2,
+                    mb: 2
+                  }}>
+                    <Typography variant="h6" sx={{ color: "#1976d2", fontWeight: 700, mb: 1 }}>
+                      Esta póliza incluye acceso a Ecosistema Bienestar:
+                    </Typography>
+                    <Typography sx={{ mb: 2 }}>
+                      Accede a nuestra plataforma digital con servicios de: <b>SALUD A UN CLICK, BIENESTAR INTEGRAL y SALUD MENTAL.</b>
+                    </Typography>
+                    <div style={{ display: "flex", gap: 40, flexWrap: "wrap" }}>
+                      <div>
+                        <Typography sx={{ color: "#26b164", fontWeight: 700 }}>Salud a un click</Typography>
+                        <ul>
+                          <li>Orientación veterinaria (video consulta)</li>
+                          <li>Internista (telemedicina)</li>
+                          <li>Enfermería (video consulta)</li>
+                          <li>Wikidoc (Herramienta de consulta)</li>
+                          <li>Exámenes preventivos (Herramienta)</li>
+                          <li>Nutrición (video consulta)</li>
+                          <li>Medicina General (telemedicina)</li>
+                          <li>Dermatólogo (telemedicina)</li>
+                          <li>Ginecólogo (telemedicina)</li>
+                          <li>Farmacia Digital (Herramienta)</li>
+                          <li>Médico domiciliario (Servicio físico)</li>
+                          <li>Exámenes de laboratorio (Herramienta)</li>
+                          <li>Traslado Médico (Servicio físico)</li>
+                        </ul>
+                        <Typography sx={{ color: "#26b164", fontWeight: 700 }}>Salud mental</Typography>
+                        <ul>
+                          <li>Psicólogo (telemedicina)</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <Typography sx={{ color: "#26b164", fontWeight: 700 }}>Bienestar integral</Typography>
+                        <ul>
+                          <li>Yoga (Clase por video)</li>
+                          <li>Pilates (Clase por video)</li>
+                          <li>Entrenador Personal (Clase por video)</li>
+                          <li>Mindfulness (video consulta)</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </Box>
+                )}
+                {/* FIN TARJETA ECOSISTEMA */}
 
                   {/* Asistencias incluidas */}
                   {prod.asistenciasSeleccionadas.length > 0 && (
