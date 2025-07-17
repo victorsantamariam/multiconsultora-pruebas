@@ -331,103 +331,101 @@ export default function App() {
         <>
           {/* Datos del cliente */}
           <Box
-            sx={{
-              maxWidth: 750,
-              margin: "0 auto",
-              background: "#fff",
-              borderRadius: 3,
-              boxShadow: "0 2px 24px #b7e4fc33",
-              p: 4,
-              mt: 3,
-            }}
-          >
-            <Typography
-              variant="h6"
-              sx={{
-                color: "#1abc74",
-                mb: 2,
-                fontWeight: 700,
-                letterSpacing: 1,
-              }}
-            >
-              Datos del cliente
-            </Typography>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2} useFlexGap flexWrap="wrap">
-              <TextField
-                label="Nombre completo"
-                name="nombre"
-                fullWidth
-                value={cliente.nombre}
-                onChange={handleClienteChange}
-                variant="outlined"
-                required
-                autoComplete="off"
-                sx={{ minWidth: 220 }}
-              />
-              <TextField
-                label="Correo electrónico"
-                name="correo"
-                type="email"
-                fullWidth
-                value={cliente.correo}
-                onChange={handleClienteChange}
-                variant="outlined"
-                required
-                autoComplete="off"
-                sx={{ minWidth: 220 }}
-              />
-              <TextField
-                label="Celular"
-                name="celular"
-                fullWidth
-                value={cliente.celular}
-                onChange={handleClienteChange}
-                variant="outlined"
-                required
-                autoComplete="off"
-                sx={{ minWidth: 220 }}
-              />
-              <TextField
-                label="Edad"
-                name="edad"
-                type="number"
-                fullWidth
-                value={cliente.edad}
-                onChange={handleClienteChange}
-                variant="outlined"
-                required
-                inputProps={{ min: 0, max: 100 }}
-                sx={{ minWidth: 120 }}
-              />
-              <TextField
-                select
-                label="Género"
-                name="genero"
-                fullWidth
-                value={cliente.genero}
-                onChange={handleClienteChange}
-                variant="outlined"
-                required
-                sx={{ minWidth: 120 }}
-              >
-                <MenuItem value="">Seleccione</MenuItem>
-                <MenuItem value="Masculino">Masculino</MenuItem>
-                <MenuItem value="Femenino">Femenino</MenuItem>
-                <MenuItem value="Otro">Otro</MenuItem>
-              </TextField>
-              <TextField
-                label="Ciudad"
-                name="ciudad"
-                fullWidth
-                value={cliente.ciudad}
-                onChange={handleClienteChange}
-                variant="outlined"
-                required
-                autoComplete="off"
-                sx={{ minWidth: 180 }}
-              />
-            </Stack>
-          </Box>
+  sx={{
+    maxWidth: 750,
+    margin: "0 auto",
+    background: "#fff",
+    borderRadius: 3,
+    boxShadow: "0 2px 24px #b7e4fc33",
+    p: 4,
+    mt: 3,
+  }}
+>
+  <Typography
+    variant="h6"
+    sx={{
+      color: "#1abc74",
+      mb: 2,
+      fontWeight: 700,
+      letterSpacing: 1,
+    }}
+  >
+    Datos del cliente
+  </Typography>
+  {/* Primera fila: Nombre, Correo, Celular */}
+  <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+    <TextField
+      label="Nombre completo *"
+      name="nombre"
+      fullWidth
+      value={cliente.nombre}
+      onChange={handleClienteChange}
+      variant="outlined"
+      required
+      autoComplete="off"
+    />
+    <TextField
+      label="Correo electrónico *"
+      name="correo"
+      type="email"
+      fullWidth
+      value={cliente.correo}
+      onChange={handleClienteChange}
+      variant="outlined"
+      required
+      autoComplete="off"
+    />
+    <TextField
+      label="Celular *"
+      name="celular"
+      fullWidth
+      value={cliente.celular}
+      onChange={handleClienteChange}
+      variant="outlined"
+      required
+      autoComplete="off"
+    />
+  </Stack>
+  {/* Segunda fila: Edad, Género, Ciudad */}
+  <Stack direction="row" spacing={2}>
+    <TextField
+      label="Edad *"
+      name="edad"
+      type="number"
+      value={cliente.edad}
+      onChange={handleClienteChange}
+      variant="outlined"
+      required
+      inputProps={{ min: 0, max: 100 }}
+      sx={{ minWidth: 120 }}
+    />
+    <TextField
+      select
+      label="Género *"
+      name="genero"
+      value={cliente.genero}
+      onChange={handleClienteChange}
+      variant="outlined"
+      required
+      sx={{ minWidth: 120 }}
+    >
+      <MenuItem value="">Seleccione</MenuItem>
+      <MenuItem value="Masculino">Masculino</MenuItem>
+      <MenuItem value="Femenino">Femenino</MenuItem>
+      <MenuItem value="Otro">Otro</MenuItem>
+    </TextField>
+    <TextField
+      label="Ciudad *"
+      name="ciudad"
+      value={cliente.ciudad}
+      onChange={handleClienteChange}
+      variant="outlined"
+      required
+      autoComplete="off"
+      fullWidth
+    />
+  </Stack>
+</Box>
 
           {/* Formulario de producto */}
           <ProductoForm
