@@ -15,7 +15,7 @@ const opcionesPoliza = {
     "Dotal 20 pagos",
     "Pensión",
     "Ap",
-    "Ecosistema",
+    "Ecosistema Bienestar", // <--- Cambiado aquí
     "Temporal 50 años",
     "Temporal 60 años",
     "Temporal 70 años",
@@ -134,58 +134,58 @@ function ProductoForm({
               ))}
           </TextField>
         </Stack>
-       {/* TARJETA ESPECIAL ECOSISTEMA: SOLO SI PLAN_PROTECCION + Ecosistema */}
-  {value.categoriaPoliza === "PLAN_PROTECCION" && value.tipoPoliza === "Ecosistema" && (
-    <Box sx={{
-      background: "#e3f3fd",
-      border: "2px solid #2196f3",
-      borderRadius: 3,
-      p: 3,
-      mt: 3,
-      mb: 2
-    }}>
-      <Typography variant="h6" sx={{ color: "#1976d2", fontWeight: 700, mb: 1 }}>
-        Esta póliza incluye acceso a Ecosistema Bienestar:
-      </Typography>
-      <Typography sx={{ mb: 2 }}>
-        Accede a nuestra plataforma digital con servicios de: <b>SALUD A UN CLICK, BIENESTAR INTEGRAL y SALUD MENTAL.</b>
-      </Typography>
-      <div style={{ display: "flex", gap: 40, flexWrap: "wrap" }}>
-        <div>
-          <Typography sx={{ color: "#26b164", fontWeight: 700 }}>Salud a un click</Typography>
-          <ul>
-            <li>Orientación veterinaria (video consulta)</li>
-            <li>Internista (telemedicina)</li>
-            <li>Enfermería (video consulta)</li>
-            <li>Wikidoc (Herramienta de consulta)</li>
-            <li>Exámenes preventivos (Herramienta)</li>
-            <li>Nutrición (video consulta)</li>
-            <li>Medicina General (telemedicina)</li>
-            <li>Dermatólogo (telemedicina)</li>
-            <li>Ginecólogo (telemedicina)</li>
-            <li>Farmacia Digital (Herramienta)</li>
-            <li>Médico domiciliario (Servicio físico)</li>
-            <li>Exámenes de laboratorio (Herramienta)</li>
-            <li>Traslado Médico (Servicio físico)</li>
-          </ul>
-          <Typography sx={{ color: "#26b164", fontWeight: 700 }}>Salud mental</Typography>
-          <ul>
-            <li>Psicólogo (telemedicina)</li>
-          </ul>
-        </div>
-        <div>
-          <Typography sx={{ color: "#26b164", fontWeight: 700 }}>Bienestar integral</Typography>
-          <ul>
-            <li>Yoga (Clase por video)</li>
-            <li>Pilates (Clase por video)</li>
-            <li>Entrenador Personal (Clase por video)</li>
-            <li>Mindfulness (video consulta)</li>
-          </ul>
-        </div>
-      </div>
-    </Box>
-  )}
-</Box>
+        {/* TARJETA ESPECIAL ECOSISTEMA: SOLO SI PLAN_PROTECCION + Ecosistema Bienestar */}
+        {value.categoriaPoliza === "PLAN_PROTECCION" && value.tipoPoliza === "Ecosistema Bienestar" && (
+          <Box sx={{
+            background: "#e3f3fd",
+            border: "2px solid #2196f3",
+            borderRadius: 3,
+            p: 3,
+            mt: 3,
+            mb: 2
+          }}>
+            <Typography variant="h6" sx={{ color: "#1976d2", fontWeight: 700, mb: 1 }}>
+              Esta póliza incluye acceso a Ecosistema Bienestar:
+            </Typography>
+            <Typography sx={{ mb: 2 }}>
+              Accede a nuestra plataforma digital con servicios de: <b>SALUD A UN CLICK, BIENESTAR INTEGRAL y SALUD MENTAL.</b>
+            </Typography>
+            <div style={{ display: "flex", gap: 40, flexWrap: "wrap" }}>
+              <div>
+                <Typography sx={{ color: "#26b164", fontWeight: 700 }}>Salud a un click</Typography>
+                <ul>
+                  <li>Orientación veterinaria (video consulta)</li>
+                  <li>Internista (telemedicina)</li>
+                  <li>Enfermería (video consulta)</li>
+                  <li>Wikidoc (Herramienta de consulta)</li>
+                  <li>Exámenes preventivos (Herramienta)</li>
+                  <li>Nutrición (video consulta)</li>
+                  <li>Medicina General (telemedicina)</li>
+                  <li>Dermatólogo (telemedicina)</li>
+                  <li>Ginecólogo (telemedicina)</li>
+                  <li>Farmacia Digital (Herramienta)</li>
+                  <li>Médico domiciliario (Servicio físico)</li>
+                  <li>Exámenes de laboratorio (Herramienta)</li>
+                  <li>Traslado Médico (Servicio físico)</li>
+                </ul>
+                <Typography sx={{ color: "#26b164", fontWeight: 700 }}>Salud mental</Typography>
+                <ul>
+                  <li>Psicólogo (telemedicina)</li>
+                </ul>
+              </div>
+              <div>
+                <Typography sx={{ color: "#26b164", fontWeight: 700 }}>Bienestar integral</Typography>
+                <ul>
+                  <li>Yoga (Clase por video)</li>
+                  <li>Pilates (Clase por video)</li>
+                  <li>Entrenador Personal (Clase por video)</li>
+                  <li>Mindfulness (video consulta)</li>
+                </ul>
+              </div>
+            </div>
+          </Box>
+        )}
+      </Box>
 
       {/* SECCIÓN: Datos de la cotización */}
       <Box sx={tarjetaStyle}>
