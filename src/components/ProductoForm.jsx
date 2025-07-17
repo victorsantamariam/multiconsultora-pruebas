@@ -76,13 +76,12 @@ function ProductoForm({
     borderRadius: 3,
     boxShadow: "0 2px 24px #b7e4fc33",
     p: 4,
-    mb: 3,
     maxWidth: 750,
     margin: "0 auto"
   };
 
   return (
-    <>
+    <Stack direction="column" spacing={3}>
       {/* SECCIÓN: Selección de tipo de póliza */}
       <Box sx={tarjetaStyle}>
         <Typography
@@ -297,7 +296,7 @@ function ProductoForm({
           </Typography>
         )}
       </Box>
-    </>
+    </Stack>
   );
 }
 
