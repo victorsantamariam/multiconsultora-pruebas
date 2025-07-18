@@ -76,7 +76,7 @@ export default function App() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  // Consultora y cliente
+  // ======= ESTADOS PRINCIPALES =======
   const [codigoConsultora, setCodigoConsultora] = useState("");
   const [consultora, setConsultora] = useState(null);
   const [errorCodigo, setErrorCodigo] = useState("");
@@ -88,8 +88,6 @@ export default function App() {
     genero: "",
     ciudad: "",
   });
-
-  // Productos
   const [productos, setProductos] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
   const [formProducto, setFormProductoOriginal] = useState(initialProductState);
@@ -115,6 +113,7 @@ export default function App() {
     }
   }, [formProducto.cotizacion.primaMensual, formProducto.datosAdicionales.primaInversion]);
 
+  // ========== HANDLERS PRINCIPALES ==========
   // Manejo de código de consultora
   const handleCodigoSubmit = (e) => {
     e.preventDefault();
@@ -257,7 +256,7 @@ export default function App() {
     }, 0);
   };
 
-  // FORMULARIO DE CONSULTORA
+  // ========== LOGIN PANTALLA CONSULTORA ==========
   if (!consultora) {
     return (
       <Box
@@ -358,7 +357,7 @@ export default function App() {
         background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
       }}
     >
-      {/* HEADER MEJORADO */}
+      {/* HEADER */}
       <Paper
         elevation={4}
         sx={{
@@ -409,7 +408,7 @@ export default function App() {
         </Container>
       </Paper>
 
-      {/* PERFIL CONSULTORA MEJORADO */}
+      {/* PERFIL DE LA CONSULTORA */}
       <Container maxWidth="lg" sx={{ mt: 3 }}>
         <Fade in={true} timeout={1000}>
           <Paper
@@ -469,11 +468,11 @@ export default function App() {
           </Paper>
         </Fade>
 
-        {/* Cotización - Productos Agregados */}
+        {/* Cotización - Productos Agregados y Formulario */}
         {!showResumen && (
           <Container maxWidth="lg" sx={{ pb: 4 }}>
             <Grid container spacing={3}>
-              {/* DATOS DEL CLIENTE */}
+              {/* Datos del cliente */}
               <Grid item xs={12}>
                 <Slide direction="up" in={true} timeout={600}>
                   <Paper
@@ -484,6 +483,7 @@ export default function App() {
                       background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
                     }}
                   >
+                    {/* Formulario Cliente */}
                     <Box
                       sx={{
                         background: "linear-gradient(135deg, #1abc9c 0%, #16a085 100%)",
@@ -501,6 +501,7 @@ export default function App() {
                     </Box>
                     <CardContent sx={{ p: 4 }}>
                       <Grid container spacing={3}>
+                        {/* Campos de datos */}
                         <Grid item xs={12} md={4}>
                           <TextField
                             label="Nombre completo"
@@ -596,7 +597,7 @@ export default function App() {
                 </Slide>
               </Grid>
 
-              {/* FORMULARIO DE PRODUCTOS */}
+              {/* Formulario de productos */}
               <Grid item xs={12}>
                 <Slide direction="up" in={true} timeout={800}>
                   <Paper elevation={6} sx={{ borderRadius: 3 }}>
@@ -614,7 +615,7 @@ export default function App() {
                 </Slide>
               </Grid>
 
-              {/* PRODUCTOS AGREGADOS */}
+              {/* Productos agregados */}
               <Grid item xs={12}>
                 <Slide direction="up" in={true} timeout={1000}>
                   <Paper
@@ -693,62 +694,64 @@ export default function App() {
                                         >
                                           {prod.tipoPoliza}
                                         </Typography>
+                                        {/* Tarjeta especial si es Ecosistema Bienestar */}
                                         {prod.categoriaPoliza === "PLAN_PROTECCION" && prod.tipoPoliza === "Ecosistema Bienestar" ? (
-  <TarjetaEcosistemaBienestar>
-    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
-      <Typography variant="h6" sx={{ fontWeight: 700, color: "#1976d2" }}>
-        {prod.tipoPoliza}
-      </Typography>
-      <Chip
-        label={prod.categoriaPoliza}
-        size="small"
-        sx={{
-          background: "linear-gradient(45deg, #1abc9c, #16a085)",
-          color: "white",
-          fontWeight: 600,
-          mb: 1,
-        }}
-      />
-    </Box>
-  </TarjetaEcosistemaBienestar>
-) : (
-  <>
-    <Typography variant="h6" sx={{ fontWeight: 700, color: "#1976d2" }}>
-      {prod.tipoPoliza}
-    </Typography>
-    <Chip
-      label={prod.categoriaPoliza}
-      size="small"
-      sx={{
-        background: "linear-gradient(45deg, #1abc9c, #16a085)",
-        color: "white",
-        fontWeight: 600,
-        mb: 1,
-      }}
-    />
-  </>
-)}
+                                          <TarjetaEcosistemaBienestar>
+                                            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
+                                              <Typography variant="h6" sx={{ fontWeight: 700, color: "#1976d2" }}>
+                                                {prod.tipoPoliza}
+                                              </Typography>
+                                              <Chip
+                                                label={prod.categoriaPoliza}
+                                                size="small"
+                                                sx={{
+                                                  background: "linear-gradient(45deg, #1abc9c, #16a085)",
+                                                  color: "white",
+                                                  fontWeight: 600,
+                                                  mb: 1,
+                                                }}
+                                              />
+                                            </Box>
+                                          </TarjetaEcosistemaBienestar>
+                                        ) : (
+                                          <>
+                                            <Typography variant="h6" sx={{ fontWeight: 700, color: "#1976d2" }}>
+                                              {prod.tipoPoliza}
+                                            </Typography>
+                                            <Chip
+                                              label={prod.categoriaPoliza}
+                                              size="small"
+                                              sx={{
+                                                background: "linear-gradient(45deg, #1abc9c, #16a085)",
+                                                color: "white",
+                                                fontWeight: 600,
+                                                mb: 1,
+                                              }}
+                                            />
+                                          </>
+                                        )}
 
-<Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
-  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-    <AttachMoney sx={{ color: "success.main", fontSize: 20 }} />
-    <Typography variant="body2">
-      <strong>Prima:</strong> {formatCurrency(prod.cotizacion.primaMensual)}
-    </Typography>
-  </Box>
-  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-    <Security sx={{ color: "info.main", fontSize: 20 }} />
-    <Typography variant="body2">
-      <strong>Suma:</strong> {formatCurrency(prod.cotizacion.sumaAsegurada)}
-    </Typography>
-  </Box>
-  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-    <Star sx={{ color: "#764ba2", fontSize: 20 }} />
-    <Typography variant="body2" sx={{ color: "#764ba2", fontWeight: 600 }}>
-      <strong>Total Mensual:</strong> {formatCurrency(calcularProductoTotal(prod))}
-    </Typography>
-  </Box>
-</Box>
+                                        {/* Valores principales */}
+                                        <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+                                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                            <AttachMoney sx={{ color: "success.main", fontSize: 20 }} />
+                                            <Typography variant="body2">
+                                              <strong>Prima:</strong> {formatCurrency(prod.cotizacion.primaMensual)}
+                                            </Typography>
+                                          </Box>
+                                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                            <Security sx={{ color: "info.main", fontSize: 20 }} />
+                                            <Typography variant="body2">
+                                              <strong>Suma:</strong> {formatCurrency(prod.cotizacion.sumaAsegurada)}
+                                            </Typography>
+                                          </Box>
+                                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                            <Star sx={{ color: "#764ba2", fontSize: 20 }} />
+                                            <Typography variant="body2" sx={{ color: "#764ba2", fontWeight: 600 }}>
+                                              <strong>Total Mensual:</strong> {formatCurrency(calcularProductoTotal(prod))}
+                                            </Typography>
+                                          </Box>
+                                        </Box>
                                         {/* Años acumulados */}
                                         {prod.datosAdicionales.aniosAcumulacion && (
                                           <Box sx={{ mt: 2, display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
@@ -759,6 +762,7 @@ export default function App() {
                                           </Box>
                                         )}
                                       </Box>
+                                      {/* Botones de edición y eliminación */}
                                       <Box sx={{ display: "flex", gap: 1 }}>
                                         <Button
                                           variant="outlined"
@@ -781,55 +785,82 @@ export default function App() {
                                         </Button>
                                       </Box>
                                     </Box>
-                                    {/* Coberturas */}
+                                    {/* Coberturas incluidas */}
                                     {(prod.coberturasFijas.length > 0 || prod.coberturasLibres.length > 0) && (
                                       <Box sx={{ mt: 3 }}>
                                         <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
                                           Coberturas Incluidas
                                         </Typography>
-                                        <Grid container spacing={1}>
+                                        <Box
+                                          sx={{
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            gap: 1.2,
+                                            mb: 2,
+                                          }}
+                                        >
                                           {[...prod.coberturasFijas, ...prod.coberturasLibres].map((cobertura, cobIdx) => (
-                                            <Grid item xs={12} sm={6} md={4} key={cobIdx}>
-                                              <Chip
-                                                label={`${cobertura.nombre}${cobertura.valor ? ` — ${formatCurrency(cobertura.valor)}` : ""}`}
-                                                size="small"
-                                                variant="outlined"
-                                                sx={{
-                                                  borderColor: "primary.main",
-                                                  color: "primary.main",
-                                                  fontWeight: 500,
-                                                }}
-                                              />
-                                            </Grid>
+                                            <Box
+                                              key={cobIdx}
+                                              sx={{
+                                                border: '1.5px solid #1976d2',
+                                                color: '#1976d2',
+                                                borderRadius: '20px',
+                                                px: 1.8,
+                                                py: 0.2,
+                                                fontSize: 15,
+                                                fontWeight: 500,
+                                                background: '#fff',
+                                                display: 'inline-block',
+                                                lineHeight: 1.7,
+                                                minHeight: 32,
+                                              }}
+                                            >
+                                              {cobertura.nombre}
+                                              {cobertura.valor ? ` — ${formatCurrency(cobertura.valor)}` : ''}
+                                            </Box>
                                           ))}
-                                        </Grid>
+                                        </Box>
                                       </Box>
                                     )}
-                                    {/* Asistencias */}
+                                    {/* Asistencias incluidas */}
                                     {prod.asistenciasSeleccionadas.length > 0 && (
                                       <Box sx={{ mt: 3 }}>
                                         <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
                                           Asistencias Incluidas
                                         </Typography>
-                                        <Grid container spacing={1}>
+                                        <Box
+                                          sx={{
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            gap: 1.2,
+                                            mb: 2,
+                                          }}
+                                        >
                                           {prod.asistenciasSeleccionadas.map((asistencia, asistIdx) => (
-                                            <Grid item xs={12} sm={6} md={4} key={asistIdx}>
-                                              <Chip
-                                                label={asistencia.nombre || asistencia}
-                                                size="small"
-                                                variant="outlined"
-                                                sx={{
-                                                  borderColor: "success.main",
-                                                  color: "success.main",
-                                                  fontWeight: 500,
-                                                }}
-                                              />
-                                            </Grid>
+                                            <Box
+                                              key={asistIdx}
+                                              sx={{
+                                                border: '1.5px solid #21926f',
+                                                color: '#21926f',
+                                                borderRadius: '20px',
+                                                px: 1.8,
+                                                py: 0.2,
+                                                fontSize: 15,
+                                                fontWeight: 500,
+                                                background: '#fff',
+                                                display: 'inline-block',
+                                                lineHeight: 1.7,
+                                                minHeight: 32,
+                                              }}
+                                            >
+                                              {asistencia.nombre || asistencia}
+                                            </Box>
                                           ))}
-                                        </Grid>
+                                        </Box>
                                       </Box>
                                     )}
-                                    {/* Notas */}
+                                    {/* Notas adicionales */}
                                     {prod.cotizacion.notas && (
                                       <Box sx={{ mt: 3 }}>
                                         <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
@@ -861,7 +892,7 @@ export default function App() {
                 </Slide>
               </Grid>
 
-              {/* BOTÓN GENERAR COTIZACIÓN */}
+              {/* Botón generar cotización */}
               <Grid item xs={12}>
                 <Box sx={{ textAlign: "center", mt: 4 }}>
                   <Button
@@ -902,7 +933,7 @@ export default function App() {
           </Container>
         )}
 
-        {/* ======================== RESUMEN PDF MEJORADO ============================== */}
+        {/* ======================== RESUMEN PDF ============================== */}
         {showResumen && (
           <Fade in={true} timeout={600}>
             <div>
@@ -984,72 +1015,75 @@ export default function App() {
                 {/* CABECERA PDF CON CONSULTORA */}
                 <PdfPortada consultora={consultora} />
 
+                {/* Cabecera principal PDF */}
                 <Box
-  sx={{
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    px: 3,
-    py: 2,
-    background: "linear-gradient(135deg, #ffffff 0%, #e3e7ed 100%)",
-    borderBottom: "1px solid #e0e0e0",
-    marginBottom: 0,
-  }}
->
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-    <img
-      src={metlifeLogo}
-      alt="MetLife Logo"
-      style={{ height: 36, marginRight: 10 }}
-    />
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    px: 3,
+                    py: 2,
+                    background: "linear-gradient(135deg, #ffffff 0%, #e3e7ed 100%)",
+                    borderBottom: "1px solid #e0e0e0",
+                    pageBreakInside: "avoid",
+                    breakInside: "avoid",
+                    marginBottom: 0,
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <img
+                      src={metlifeLogo}
+                      alt="MetLife Logo"
+                      style={{ height: 36, marginRight: 10 }}
+                    />
                     <Avatar
-      src={consultora.foto}
-      alt={consultora.nombre}
-      sx={{
-        width: 38,
-        height: 38,
-        border: "2px solid #1976d2",
-        boxShadow: "0 1px 6px rgba(0,0,0,0.08)",
-      }}
-    />
+                      src={consultora.foto}
+                      alt={consultora.nombre}
+                      sx={{
+                        width: 38,
+                        height: 38,
+                        border: "2px solid #1976d2",
+                        boxShadow: "0 1px 6px rgba(0,0,0,0.08)",
+                      }}
+                    />
                     <Box sx={{ ml: 1 }}>
-      <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#222", fontSize: 15 }}>
-        {consultora.nombre}
-      </Typography>
-      <Typography variant="body2" sx={{ color: "#555", fontSize: 11 }}>
-        {consultora.cargo}
-      </Typography>
-    </Box>
-  </Box>
-  <Box sx={{ textAlign: "right" }}>
-    <Typography
-      variant="h5"
-      sx={{
-        fontWeight: 800,
-        mb: 0.2,
-        color: "#222",
-        letterSpacing: "-1px",
-        fontSize: 22,
-      }}
-    >
-                     COTIZACIÓN DE SEGUROS
-    </Typography>
-    <Typography variant="body2" sx={{ color: "#333", fontSize: 12 }}>
-      MetLife Colombia
-    </Typography>
-    <Typography variant="body2" sx={{ color: "#555", fontSize: 11 }}>
-      {new Date().toLocaleDateString('es-CO', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      })}
-    </Typography>
-  </Box>
-</Box>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#222", fontSize: 15 }}>
+                        {consultora.nombre}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: "#555", fontSize: 11 }}>
+                        {consultora.cargo}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Box sx={{ textAlign: "right" }}>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontWeight: 800,
+                        mb: 0.2,
+                        color: "#222",
+                        letterSpacing: "-1px",
+                        fontSize: 22,
+                      }}
+                    >
+                      COTIZACIÓN DE SEGUROS
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#333", fontSize: 12 }}>
+                      MetLife Colombia
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#555", fontSize: 11 }}>
+                      {new Date().toLocaleDateString('es-CO', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </Typography>
+                  </Box>
+                </Box>
 
                 <CardContent sx={{ p: 4 }}>
                   {/* INFORMACIÓN DEL CLIENTE */}
-                  <Box sx={{ mb: 4 }}>
+                  <Box sx={{ mb: 4, pageBreakInside: "avoid", breakInside: "avoid" }}>
                     <Typography
                       variant="h5"
                       sx={{
@@ -1071,6 +1105,8 @@ export default function App() {
                             p: 3,
                             background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
                             borderRadius: 2,
+                            pageBreakInside: "avoid",
+                            breakInside: "avoid",
                           }}
                         >
                           <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
@@ -1130,33 +1166,14 @@ export default function App() {
                               background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
                               borderRadius: 3,
                               border: "1px solid #e0e0e0",
+                              pageBreakInside: "avoid",
+                              breakInside: "avoid",
+                              marginBottom: 2,
                             }}
                           >
-                            <CardContent sx={{ p: 3 }}>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "space-between",
-                                  mb: 2,
-                                }}
-                              >
-                                <Typography
-                                  variant="h6"
-                                  sx={{ fontWeight: 700, color: "primary.main" }}
-                                >
-                                  {producto.tipoPoliza}
-                                </Typography>
-                                <Chip
-                                  label={producto.categoriaPoliza}
-                                  sx={{
-                                    background: "linear-gradient(45deg, #1abc9c, #16a085)",
-                                    color: "white",
-                                    fontWeight: 600,
-                                  }}
-                                />
-                              </Box>
+                            <CardContent sx={{ p: 3 }}>                     
 
+                              {/* Valores principales */}
                               <Grid container spacing={2}>
                                 <Grid item xs={12} md={4}>
                                   <Paper
@@ -1165,6 +1182,8 @@ export default function App() {
                                       p: 2,
                                       background: "linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)",
                                       borderRadius: 2,
+                                      pageBreakInside: "avoid",
+                                      breakInside: "avoid",
                                     }}
                                   >
                                     <Typography variant="body2" sx={{ color: "text.secondary", mb: 1 }}>
@@ -1182,6 +1201,8 @@ export default function App() {
                                       p: 2,
                                       background: "linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%)",
                                       borderRadius: 2,
+                                      pageBreakInside: "avoid",
+                                      breakInside: "avoid",
                                     }}
                                   >
                                     <Typography variant="body2" sx={{ color: "text.secondary", mb: 1 }}>
@@ -1200,6 +1221,8 @@ export default function App() {
                                         p: 2,
                                         background: "linear-gradient(135deg, #fff3e0 0%, #ffcc02 100%)",
                                         borderRadius: 2,
+                                        pageBreakInside: "avoid",
+                                        breakInside: "avoid",
                                       }}
                                     >
                                       <Typography variant="body2" sx={{ color: "text.secondary", mb: 1 }}>
@@ -1211,7 +1234,6 @@ export default function App() {
                                     </Paper>
                                   </Grid>
                                 )}
-                                
                                 <Grid item xs={12} md={12}>
                                   <Paper
                                     elevation={0}
@@ -1222,7 +1244,9 @@ export default function App() {
                                       borderRadius: 2,
                                       display: "flex",
                                       alignItems: "center",
-                                      justifyContent: "flex-end"
+                                      justifyContent: "flex-end",
+                                      pageBreakInside: "avoid",
+                                      breakInside: "avoid",
                                     }}
                                   >
                                     <Star sx={{ color: "#764ba2", fontSize: 22, mr: 1 }} />
@@ -1243,7 +1267,9 @@ export default function App() {
                                         borderRadius: 2,
                                         display: "flex",
                                         alignItems: "center",
-                                        justifyContent: "flex-end"
+                                        justifyContent: "flex-end",
+                                        pageBreakInside: "avoid",
+                                        breakInside: "avoid",
                                       }}
                                     >
                                       <CalendarToday sx={{ color: "#1976d2", fontSize: 22, mr: 1 }} />
@@ -1255,60 +1281,194 @@ export default function App() {
                                 )}
                               </Grid>
 
-                              {/* Coberturas */}
-                              {(producto.coberturasFijas.length > 0 || producto.coberturasLibres.length > 0) && (
-                                <Box sx={{ mt: 3 }}>
-                                  <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-                                    Coberturas Incluidas
-                                  </Typography>
-                                  
-                                  <Grid container spacing={1}>
-                                    {[...producto.coberturasFijas, ...producto.coberturasLibres].map((cobertura, cobIdx) => (
-                                      <Grid item xs={12} sm={6} md={4} key={cobIdx}>
-                                        <Chip
-                                          label={`${cobertura.nombre}${cobertura.valor ? ` — ${formatCurrency(cobertura.valor)}` : ""}`}
-                                          size="small"
-                                          variant="outlined"
-                                          sx={{
-                                            borderColor: "primary.main",
-                                            color: "primary.main",
-                                            fontWeight: 500,
-                                          }}
-                                        />
-                                      </Grid>
-                                    ))}
-                                  </Grid>
+                              {/* Coberturas incluidas */}
+                              <Box sx={{ mt: 3 }}>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                                  Coberturas Incluidas
+                                </Typography>
+                                <Box
+                                  sx={{
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: 1.2,
+                                    mb: 2,
+                                  }}
+                                >
+                                  {[...producto.coberturasFijas, ...producto.coberturasLibres].map((cobertura, cobIdx) => (
+                                    <Box
+                                      key={cobIdx}
+                                      sx={{
+                                        border: '1.5px solid #1976d2',
+                                        color: '#1976d2',
+                                        borderRadius: '20px',
+                                        px: 1.8,
+                                        py: 0.2,
+                                        fontSize: 15,
+                                        fontWeight: 500,
+                                        background: '#fff',
+                                        display: 'inline-block',
+                                        lineHeight: 1.7,
+                                        minHeight: 32,
+                                      }}
+                                    >
+                                      {cobertura.nombre}
+                                      {cobertura.valor ? ` — ${formatCurrency(cobertura.valor)}` : ''}
+                                    </Box>
+                                  ))}
                                 </Box>
-                              )}
-                              {producto.categoriaPoliza === "PLAN_PROTECCION" && producto.tipoPoliza === "Ecosistema Bienestar" && (
-                                <TarjetaEcosistemaBienestar />
-                              )}
-                              {/* Asistencias */}
+                              </Box>
+
+                              {/* Asistencias incluidas */}
                               {producto.asistenciasSeleccionadas.length > 0 && (
                                 <Box sx={{ mt: 3 }}>
                                   <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
                                     Asistencias Incluidas
                                   </Typography>
-                                  <Grid container spacing={1}>
+                                  <Box
+                                    sx={{
+                                      display: 'flex',
+                                      flexWrap: 'wrap',
+                                      gap: 1.2,
+                                      mb: 2,
+                                    }}
+                                  >
                                     {producto.asistenciasSeleccionadas.map((asistencia, asistIdx) => (
-                                      <Grid item xs={12} sm={6} md={4} key={asistIdx}>
-                                        <Chip
-                                          label={asistencia.nombre || asistencia}
-                                          size="small"
-                                          variant="outlined"
-                                          sx={{
-                                            borderColor: "success.main",
-                                            color: "success.main",
-                                            fontWeight: 500,
-                                          }}
-                                        />
-                                      </Grid>
+                                      <Box
+                                        key={asistIdx}
+                                        sx={{
+                                          border: '1.5px solid #21926f',
+                                          color: '#21926f',
+                                          borderRadius: '20px',
+                                          px: 1.8,
+                                          py: 0.2,
+                                          fontSize: 15,
+                                          fontWeight: 500,
+                                          background: '#fff',
+                                          display: 'inline-block',
+                                          lineHeight: 1.7,
+                                          minHeight: 32,
+                                        }}
+                                      >
+                                        {asistencia.nombre || asistencia}
+                                      </Box>
                                     ))}
-                                  </Grid>
+                                  </Box>
                                 </Box>
                               )}
+                                
+                              {producto.categoriaPoliza === "PLAN_PROTECCION" && producto.tipoPoliza === "Ecosistema Bienestar" ? (
+  <Box
+    sx={{
+      p: 2,
+      mb: 2,
+      borderRadius: 2,
+      background: "#f4faff",
+      border: "1.5px solid #90caf9",
+      boxShadow: "0 1px 6px rgba(33,150,243,0.05)",
+      fontSize: 13,
+      maxWidth: 700,
+      mx: "auto"
+    }}
+  >
+    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#1976d2", fontSize: 18 }}>
+        Ecosistema Bienestar
+      </Typography>
+      <Chip
+        label="PLAN_PROTECCION"
+        size="small"
+        sx={{
+          background: "#00b894",
+          color: "white",
+          fontWeight: 600,
+          fontSize: 11,
+          height: 22,
+          borderRadius: "10px",
+          px: 1.3,
+        }}
+      />
+    </Box>
+    <Typography sx={{ fontWeight: 600, my: .5, fontSize: 13.5, color: "#1565c0" }}>
+      Esta póliza incluye acceso a Ecosistema Bienestar:
+    </Typography>
+    <Typography sx={{ fontSize: 13, mb: 1 }}>
+      Accede a nuestra plataforma digital con servicios de:&nbsp;
+      <span style={{ fontWeight: 700 }}>SALUD A UN CLICK</span>,&nbsp;
+      <span style={{ fontWeight: 700 }}>BIENESTAR INTEGRAL</span> y&nbsp;
+      <span style={{ fontWeight: 700 }}>SALUD MENTAL</span>.
+    </Typography>
+    <Box sx={{ display: "flex", gap: 4 }}>
+      <Box>
+        <Typography sx={{ fontWeight: 600, color: "#43a047", fontSize: 13.2 }}>
+          Salud a un click
+        </Typography>
+        <ul style={{ margin: "7px 0 0 15px", paddingLeft: 0 }}>
+          <li>Orientación veterinaria (video consulta)</li>
+          <li>Internista (telemedicina)</li>
+          <li>Enfermería (video consulta)</li>
+          <li>Wikidoc (herramienta de consulta)</li>
+          <li>Exámenes preventivos (herramienta)</li>
+          <li>Nutrición (video consulta)</li>
+          <li>Medicina General (telemedicina)</li>
+          <li>Dermatólogo (telemedicina)</li>
+          <li>Ginecólogo (telemedicina)</li>
+          <li>Farmacia Digital (herramienta)</li>
+          <li>Médico domiciliario (servicio físico)</li>
+          <li>Exámenes de laboratorio (herramienta)</li>
+          <li>Traslado Médico (servicio físico)</li>
+        </ul>
+      </Box>
+      <Box>
+        <Typography sx={{ fontWeight: 600, color: "#2d8fce", fontSize: 13.2 }}>
+          Bienestar integral
+        </Typography>
+        <ul style={{ margin: "7px 0 0 15px", paddingLeft: 0 }}>
+          <li>Yoga (clase por video)</li>
+          <li>Pilates (clase por video)</li>
+          <li>Entrenador Personal (clase por video)</li>
+          <li>Mindfulness (video consulta)</li>
+        </ul>
+        <Typography sx={{ fontWeight: 600, color: "#388e3c", fontSize: 13.2, mt: 1 }}>
+          Salud mental
+        </Typography>
+        <ul style={{ margin: "7px 0 0 15px", paddingLeft: 0 }}>
+          <li>Psicólogo (telemedicina)</li>
+        </ul>
+      </Box>
+    </Box>
+  </Box>
+) : (
+  <Box
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      mb: 2,
+    }}
+  >
+    <Typography
+      variant="h6"
+      sx={{
+        fontWeight: 700,
+        color: "primary.main",
+        mr: 2,
+      }}
+    >
+      {producto.tipoPoliza}
+    </Typography>
+    <Chip
+      label={producto.categoriaPoliza}
+      size="small"
+      sx={{
+        background: "linear-gradient(45deg, #1abc9c, #16a085)",
+        color: "white",
+        fontWeight: 600,
+      }}
+    />
+  </Box>
+)}
 
-                              {/* Notas */}
+                              {/* Notas Adicionales */}
                               {producto.cotizacion.notas && (
                                 <Box sx={{ mt: 3 }}>
                                   <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
@@ -1320,6 +1480,8 @@ export default function App() {
                                       p: 2,
                                       background: "linear-gradient(135deg, #f5f5f5 0%, #eeeeee 100%)",
                                       borderRadius: 2,
+                                      pageBreakInside: "avoid",
+                                      breakInside: "avoid",
                                     }}
                                   >
                                     <Typography variant="body2" sx={{ fontStyle: "italic" }}>
@@ -1336,7 +1498,7 @@ export default function App() {
                   </Box>
 
                   {/* RESUMEN TOTAL */}
-                  <Box sx={{ mt: 4 }}>
+                  <Box sx={{ mt: 4, pageBreakInside: "avoid", breakInside: "avoid" }}>
                     <Paper
                       elevation={6}
                       sx={{
@@ -1344,6 +1506,8 @@ export default function App() {
                         color: "white",
                         borderRadius: 3,
                         overflow: "hidden",
+                        pageBreakInside: "avoid",
+                        breakInside: "avoid",
                       }}
                     >
                       <Box sx={{ p: 4, textAlign: "center" }}>
@@ -1367,7 +1531,7 @@ export default function App() {
                   </Box>
 
                   {/* TOTAL ACUMULACION DE CAPITAL */}
-                  <Box sx={{ mt: 2, textAlign: "center" }}>
+                  <Box sx={{ mt: 2, textAlign: "center", pageBreakInside: "avoid", breakInside: "avoid" }}>
                     <Typography variant="h6" sx={{ fontWeight: 700, color: "#1976d2", mb: 2 }}>
                       Total Acumulación de Capital
                     </Typography>
@@ -1388,7 +1552,7 @@ export default function App() {
                   </Box>
 
                   {/* DATOS DE LA CONSULTORA AL FINAL */}
-                  <Box sx={{ mt: 4 }}>
+                  <Box sx={{ mt: 4, pageBreakInside: "avoid", breakInside: "avoid" }}>
                     <Typography
                       variant="h6"
                       sx={{
@@ -1413,6 +1577,8 @@ export default function App() {
                         gap: 2,
                         maxWidth: 420,
                         mb: 1,
+                        pageBreakInside: "avoid",
+                        breakInside: "avoid",
                       }}
                     >
                       <Avatar
@@ -1445,9 +1611,9 @@ export default function App() {
                       </Box>
                     </Paper>
                   </Box>
-
-                  {/* TÉRMINOS Y CONDICIONES */}
-                  <Box sx={{ mt: 4, p: 3, background: "#f8f9fa", borderRadius: 2 }}>
+                  {/* TÉRMINOS Y CONDICIONES (comentado por preferencia) */}
+                  {/*
+                  <Box sx={{ mt: 4, p: 3, background: "#f8f9fa", borderRadius: 2, pageBreakInside: "avoid", breakInside: "avoid" }}>
                     <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
                       Términos y Condiciones
                     </Typography>
@@ -1464,9 +1630,9 @@ export default function App() {
                       • Esta cotización no constituye una oferta de seguro ni genera obligación alguna para MetLife.
                     </Typography>
                   </Box>
-
+                  */}
                   {/* FOOTER */}
-                  <Box sx={{ mt: 4, textAlign: "center", py: 2 }}>
+                  <Box sx={{ mt: 4, textAlign: "center", py: 2, pageBreakInside: "avoid", breakInside: "avoid" }}>
                     <Typography variant="body2" sx={{ color: "text.secondary" }}>
                       MetLife Colombia - Protegiendo lo que más importa
                     </Typography>
