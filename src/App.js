@@ -39,6 +39,7 @@ import metlifeLogo from "./metlife-logo.png";
 import consultoras from "./data/consultoras";
 import html2pdf from "html2pdf.js";
 import ProductoForm from "./components/ProductoForm";
+import TarjetaEcosistemaBienestar from "./components/TarjetaEcosistemaBienestar";
 
 // Estado inicial de un producto
 const initialProductState = {
@@ -691,36 +692,62 @@ export default function App() {
                                         >
                                           {prod.tipoPoliza}
                                         </Typography>
-                                        <Chip
-                                          label={prod.categoriaPoliza}
-                                          size="small"
-                                          sx={{
-                                            background: "linear-gradient(45deg, #1abc9c, #16a085)",
-                                            color: "white",
-                                            fontWeight: 600,
-                                            mb: 1,
-                                          }}
-                                        />
-                                        <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
-                                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                            <AttachMoney sx={{ color: "success.main", fontSize: 20 }} />
-                                            <Typography variant="body2">
-                                              <strong>Prima:</strong> {formatCurrency(prod.cotizacion.primaMensual)}
-                                            </Typography>
-                                          </Box>
-                                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                            <Security sx={{ color: "info.main", fontSize: 20 }} />
-                                            <Typography variant="body2">
-                                              <strong>Suma:</strong> {formatCurrency(prod.cotizacion.sumaAsegurada)}
-                                            </Typography>
-                                          </Box>
-                                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                            <Star sx={{ color: "#764ba2", fontSize: 20 }} />
-                                            <Typography variant="body2" sx={{ color: "#764ba2", fontWeight: 600 }}>
-                                              <strong>Total Mensual:</strong> {formatCurrency(calcularProductoTotal(prod))}
-                                            </Typography>
-                                          </Box>
-                                        </Box>
+                                        {prod.categoriaPoliza === "PLAN_PROTECCION" && prod.tipoPoliza === "Ecosistema Bienestar" ? (
+  <TarjetaEcosistemaBienestar>
+    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
+      <Typography variant="h6" sx={{ fontWeight: 700, color: "#1976d2" }}>
+        {prod.tipoPoliza}
+      </Typography>
+      <Chip
+        label={prod.categoriaPoliza}
+        size="small"
+        sx={{
+          background: "linear-gradient(45deg, #1abc9c, #16a085)",
+          color: "white",
+          fontWeight: 600,
+          mb: 1,
+        }}
+      />
+    </Box>
+  </TarjetaEcosistemaBienestar>
+) : (
+  <>
+    <Typography variant="h6" sx={{ fontWeight: 700, color: "#1976d2" }}>
+      {prod.tipoPoliza}
+    </Typography>
+    <Chip
+      label={prod.categoriaPoliza}
+      size="small"
+      sx={{
+        background: "linear-gradient(45deg, #1abc9c, #16a085)",
+        color: "white",
+        fontWeight: 600,
+        mb: 1,
+      }}
+    />
+  </>
+)}
+
+<Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+    <AttachMoney sx={{ color: "success.main", fontSize: 20 }} />
+    <Typography variant="body2">
+      <strong>Prima:</strong> {formatCurrency(prod.cotizacion.primaMensual)}
+    </Typography>
+  </Box>
+  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+    <Security sx={{ color: "info.main", fontSize: 20 }} />
+    <Typography variant="body2">
+      <strong>Suma:</strong> {formatCurrency(prod.cotizacion.sumaAsegurada)}
+    </Typography>
+  </Box>
+  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+    <Star sx={{ color: "#764ba2", fontSize: 20 }} />
+    <Typography variant="body2" sx={{ color: "#764ba2", fontWeight: 600 }}>
+      <strong>Total Mensual:</strong> {formatCurrency(calcularProductoTotal(prod))}
+    </Typography>
+  </Box>
+</Box>
                                         {/* Años acumulados */}
                                         {prod.datosAdicionales.aniosAcumulacion && (
                                           <Box sx={{ mt: 2, display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
@@ -1177,6 +1204,7 @@ export default function App() {
                                     </Paper>
                                   </Grid>
                                 )}
+                                
                                 <Grid item xs={12} md={12}>
                                   <Paper
                                     elevation={0}
@@ -1226,6 +1254,7 @@ export default function App() {
                                   <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
                                     Coberturas Incluidas
                                   </Typography>
+                                  
                                   <Grid container spacing={1}>
                                     {[...producto.coberturasFijas, ...producto.coberturasLibres].map((cobertura, cobIdx) => (
                                       <Grid item xs={12} sm={6} md={4} key={cobIdx}>
@@ -1244,7 +1273,9 @@ export default function App() {
                                   </Grid>
                                 </Box>
                               )}
-
+                              {producto.categoriaPoliza === "PLAN_PROTECCION" && producto.tipoPoliza === "Ecosistema Bienestar" && (
+                                <TarjetaEcosistemaBienestar />
+                              )}
                               {/* Asistencias */}
                               {producto.asistenciasSeleccionadas.length > 0 && (
                                 <Box sx={{ mt: 3 }}>
