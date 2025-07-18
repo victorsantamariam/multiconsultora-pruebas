@@ -40,6 +40,7 @@ import consultoras from "./data/consultoras";
 import html2pdf from "html2pdf.js";
 import ProductoForm from "./components/ProductoForm";
 import TarjetaEcosistemaBienestar from "./components/TarjetaEcosistemaBienestar";
+import PdfPortada from './components/PdfPortada';
 
 // Estado inicial de un producto
 const initialProductState = {
@@ -981,64 +982,70 @@ export default function App() {
               {/* CONTENIDO DEL PDF */}
               <div id="pdf-content" style={{ margin: 0, padding: 0 }}>
                 {/* CABECERA PDF CON CONSULTORA */}
+                <PdfPortada consultora={consultora} />
+
                 <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    p: 4,
-                    background: "linear-gradient(135deg, #ffffff 0%, #e3e7ed 100%)",
-                  }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <img
-                      src={metlifeLogo}
-                      alt="MetLife Logo"
-                      style={{ height: 50, marginRight: 16 }}
-                    />
+  sx={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    px: 3,
+    py: 2,
+    background: "linear-gradient(135deg, #ffffff 0%, #e3e7ed 100%)",
+    borderBottom: "1px solid #e0e0e0",
+    marginBottom: 0,
+  }}
+>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+    <img
+      src={metlifeLogo}
+      alt="MetLife Logo"
+      style={{ height: 36, marginRight: 10 }}
+    />
                     <Avatar
-                      src={consultora.foto}
-                      alt={consultora.nombre}
-                      sx={{
-                        width: 66,
-                        height: 66,
-                        border: "3px solid #1976d2",
-                        boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-                      }}
-                    />
-                    <Box>
-                      <Typography variant="h5" sx={{ fontWeight: 700, color: "#222" }}>
-                        {consultora.nombre}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: "#555" }}>
-                        {consultora.cargo}
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Box sx={{ textAlign: "right" }}>
-                    <Typography
-                      variant="h3"
-                      sx={{
-                        fontWeight: 800,
-                        mb: 1,
-                        color: "#222", // Color negro
-                        textShadow: "0 2px 4px rgba(0,0,0,0.08)",
-                      }}
-                    >
-                      COTIZACIÓN DE SEGUROS
-                    </Typography>
-                    <Typography variant="h6" sx={{ color: "#333", mb: 1 }}>
-                      MetLife Colombia
-                    </Typography>
-                    <Typography variant="body1" sx={{ color: "#555" }}>
-                      {new Date().toLocaleDateString('es-CO', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </Typography>
-                  </Box>
-                </Box>
+      src={consultora.foto}
+      alt={consultora.nombre}
+      sx={{
+        width: 38,
+        height: 38,
+        border: "2px solid #1976d2",
+        boxShadow: "0 1px 6px rgba(0,0,0,0.08)",
+      }}
+    />
+                    <Box sx={{ ml: 1 }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#222", fontSize: 15 }}>
+        {consultora.nombre}
+      </Typography>
+      <Typography variant="body2" sx={{ color: "#555", fontSize: 11 }}>
+        {consultora.cargo}
+      </Typography>
+    </Box>
+  </Box>
+  <Box sx={{ textAlign: "right" }}>
+    <Typography
+      variant="h5"
+      sx={{
+        fontWeight: 800,
+        mb: 0.2,
+        color: "#222",
+        letterSpacing: "-1px",
+        fontSize: 22,
+      }}
+    >
+                     COTIZACIÓN DE SEGUROS
+    </Typography>
+    <Typography variant="body2" sx={{ color: "#333", fontSize: 12 }}>
+      MetLife Colombia
+    </Typography>
+    <Typography variant="body2" sx={{ color: "#555", fontSize: 11 }}>
+      {new Date().toLocaleDateString('es-CO', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })}
+    </Typography>
+  </Box>
+</Box>
 
                 <CardContent sx={{ p: 4 }}>
                   {/* INFORMACIÓN DEL CLIENTE */}
