@@ -111,7 +111,7 @@ export default function App() {
         },
       }));
     }
-  }, [formProducto.cotizacion.primaMensual, formProducto.datosAdicionales.primaInversion]);
+  }, [formProducto.cotizacion.primaMensual, formProducto.datosAdicionales.primaInversion, formProducto.datosAdicionales.totalInversion ]);
 
   // ========== HANDLERS PRINCIPALES ==========
   // Manejo de código de consultora
@@ -1637,7 +1637,7 @@ export default function App() {
                       MetLife Colombia - Protegiendo lo que más importa
                     </Typography>
                     <Typography variant="body2" sx={{ color: "text.secondary", mt: 1 }}>
-                      www.metlife.com.co | Línea de atención: 01 8000 915 303
+                      www.metlife.com.co 
                     </Typography>
                   </Box>
                 </CardContent>

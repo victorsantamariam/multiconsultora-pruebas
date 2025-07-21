@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, TextField, IconButton, Stack } from "@mui/material";
+import { Box, TextField, IconButton, Stack } from "@mui/material";
 import { NumericFormat } from "react-number-format";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Button } from "@mui/material";

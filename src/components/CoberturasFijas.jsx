@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, TextField, Chip, Stack } from "@mui/material";
+import { Box, TextField, Chip, Stack } from "@mui/material";
 import { NumericFormat } from "react-number-format";
 
 export default function CoberturasFijas({ value = [], onChange, opciones = [] }) {

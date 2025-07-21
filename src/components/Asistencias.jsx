@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, FormGroup, FormControlLabel, Checkbox } from "@mui/material";
+import { Box, FormGroup, FormControlLabel, Checkbox } from "@mui/material";
 
 const asistenciasDisponibles = [
   "Asistencia odontológica de emergencia",
