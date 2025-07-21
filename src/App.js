@@ -1025,7 +1025,7 @@ export default function App() {
                     py: 2,
                     background: "linear-gradient(135deg, #ffffff 0%, #e3e7ed 100%)",
                     borderBottom: "1px solid #e0e0e0",
-                    pageBreakInside: "avoid",
+                    pageBreakInside: "auto",
                     breakInside: "avoid",
                     marginBottom: 0,
                   }}
@@ -1083,7 +1083,7 @@ export default function App() {
 
                 <CardContent sx={{ p: 4 }}>
                   {/* INFORMACIÓN DEL CLIENTE */}
-                  <Box sx={{ mb: 4, pageBreakInside: "avoid", breakInside: "avoid" }}>
+                  <Box sx={{ mb: 4, pageBreakInside: "auto", breakInside: "avoid" }}>
                     <Typography
                       variant="h5"
                       sx={{
@@ -1105,7 +1105,7 @@ export default function App() {
                             p: 3,
                             background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
                             borderRadius: 2,
-                            pageBreakInside: "avoid",
+                            pageBreakInside: "auto",
                             breakInside: "avoid",
                           }}
                         >
@@ -1166,7 +1166,7 @@ export default function App() {
                               background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
                               borderRadius: 3,
                               border: "1px solid #e0e0e0",
-                              pageBreakInside: "avoid",
+                              pageBreakInside: "auto",
                               breakInside: "avoid",
                               marginBottom: 2,
                             }}
@@ -1182,7 +1182,7 @@ export default function App() {
                                       p: 2,
                                       background: "linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)",
                                       borderRadius: 2,
-                                      pageBreakInside: "avoid",
+                                      pageBreakInside: "auto",
                                       breakInside: "avoid",
                                     }}
                                   >
@@ -1201,7 +1201,7 @@ export default function App() {
                                       p: 2,
                                       background: "linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%)",
                                       borderRadius: 2,
-                                      pageBreakInside: "avoid",
+                                      pageBreakInside: "auto",
                                       breakInside: "avoid",
                                     }}
                                   >
@@ -1221,7 +1221,7 @@ export default function App() {
                                         p: 2,
                                         background: "linear-gradient(135deg, #fff3e0 0%, #ffcc02 100%)",
                                         borderRadius: 2,
-                                        pageBreakInside: "avoid",
+                                        pageBreakInside: "auto",
                                         breakInside: "avoid",
                                       }}
                                     >
@@ -1245,7 +1245,7 @@ export default function App() {
                                       display: "flex",
                                       alignItems: "center",
                                       justifyContent: "flex-end",
-                                      pageBreakInside: "avoid",
+                                      pageBreakInside: "auto",
                                       breakInside: "avoid",
                                     }}
                                   >
@@ -1268,7 +1268,7 @@ export default function App() {
                                         display: "flex",
                                         alignItems: "center",
                                         justifyContent: "flex-end",
-                                        pageBreakInside: "avoid",
+                                        pageBreakInside: "auto",
                                         breakInside: "avoid",
                                       }}
                                     >
@@ -1480,7 +1480,7 @@ export default function App() {
                                       p: 2,
                                       background: "linear-gradient(135deg, #f5f5f5 0%, #eeeeee 100%)",
                                       borderRadius: 2,
-                                      pageBreakInside: "avoid",
+                                      pageBreakInside: "auto",
                                       breakInside: "avoid",
                                     }}
                                   >
@@ -1498,7 +1498,7 @@ export default function App() {
                   </Box>
 
                   {/* RESUMEN TOTAL */}
-                  <Box sx={{ mt: 4, pageBreakInside: "avoid", breakInside: "avoid" }}>
+                  <Box sx={{ mt: 4, pageBreakInside: "auto", breakInside: "avoid" }}>
                     <Paper
                       elevation={6}
                       sx={{
@@ -1506,7 +1506,7 @@ export default function App() {
                         color: "white",
                         borderRadius: 3,
                         overflow: "hidden",
-                        pageBreakInside: "avoid",
+                        pageBreakInside: "auto",
                         breakInside: "avoid",
                       }}
                     >
@@ -1531,7 +1531,7 @@ export default function App() {
                   </Box>
 
                   {/* TOTAL ACUMULACION DE CAPITAL */}
-                  <Box sx={{ mt: 2, textAlign: "center", pageBreakInside: "avoid", breakInside: "avoid" }}>
+                  <Box sx={{ mt: 2, textAlign: "center", pageBreakInside: "auto", breakInside: "avoid" }}>
                     <Typography variant="h6" sx={{ fontWeight: 700, color: "#1976d2", mb: 2 }}>
                       Total Acumulación de Capital
                     </Typography>
@@ -1552,7 +1552,7 @@ export default function App() {
                   </Box>
 
                   {/* DATOS DE LA CONSULTORA AL FINAL */}
-                  <Box sx={{ mt: 4, pageBreakInside: "avoid", breakInside: "avoid" }}>
+                  <Box sx={{ mt: 4, pageBreakInside: "auto", breakInside: "avoid" }}>
                     <Typography
                       variant="h6"
                       sx={{
@@ -1577,7 +1577,7 @@ export default function App() {
                         gap: 2,
                         maxWidth: 420,
                         mb: 1,
-                        pageBreakInside: "avoid",
+                        pageBreakInside: "auto",
                         breakInside: "avoid",
                       }}
                     >
@@ -1613,7 +1613,7 @@ export default function App() {
                   </Box>
                   {/* TÉRMINOS Y CONDICIONES (comentado por preferencia) */}
                   {/*
-                  <Box sx={{ mt: 4, p: 3, background: "#f8f9fa", borderRadius: 2, pageBreakInside: "avoid", breakInside: "avoid" }}>
+                  <Box sx={{ mt: 4, p: 3, background: "#f8f9fa", borderRadius: 2, pageBreakInside: "auto", breakInside: "avoid" }}>
                     <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
                       Términos y Condiciones
                     </Typography>
@@ -1632,7 +1632,7 @@ export default function App() {
                   </Box>
                   */}
                   {/* FOOTER */}
-                  <Box sx={{ mt: 4, textAlign: "center", py: 2, pageBreakInside: "avoid", breakInside: "avoid" }}>
+                  <Box sx={{ mt: 4, textAlign: "center", py: 2, pageBreakInside: "auto", breakInside: "avoid" }}>
                     <Typography variant="body2" sx={{ color: "text.secondary" }}>
                       MetLife Colombia - Protegiendo lo que más importa
                     </Typography>
