@@ -1637,7 +1637,8 @@ export default function App() {
                       MetLife Colombia - Protegiendo lo que más importa
                     </Typography>
                     <Typography variant="body2" sx={{ color: "text.secondary", mt: 1 }}>
-                      www.metlife.com.co 
+                      www.metlife.com.co
+                      
                     </Typography>
                   </Box>
                 </CardContent>
